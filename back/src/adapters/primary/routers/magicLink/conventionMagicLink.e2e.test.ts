@@ -11,6 +11,7 @@ import {
   Role,
   ScheduleDtoBuilder,
 } from "shared";
+import { createSupertestSharedClient } from "shared-routes/supertest";
 import { buildTestApp } from "../../../../_testBuilders/buildTestApp";
 import {
   GenerateBackOfficeJwt,
@@ -42,6 +43,7 @@ describe("Magic link router", () => {
       generateInclusionConnectJwt,
       inMemoryUow,
     } = await buildTestApp());
+    const sharedRequest = createSupertestSharedClient(agencyRoutes, request);
     const initialConvention = conventionBuilder.build();
     inMemoryUow.conventionRepository.setConventions({
       [initialConvention.id]: initialConvention,
