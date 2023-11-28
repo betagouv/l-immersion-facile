@@ -23,6 +23,7 @@ import {
   GenerateBackOfficeJwt,
   GenerateConventionJwt,
   GenerateInclusionConnectJwt,
+  GenerateJwtFn,
 } from "../../../../domain/auth/jwt";
 import { InMemoryUnitOfWork } from "../../config/uowConfig";
 
@@ -54,6 +55,7 @@ describe("Magic link router", () => {
   let generateConventionJwt: GenerateConventionJwt;
   let generateInclusionConnectJwt: GenerateInclusionConnectJwt;
   let inMemoryUow: InMemoryUnitOfWork;
+  let generateJwtForScenario: (scenario: JwtScenario) => string;
 
   beforeEach(async () => {
     const testApp = await buildTestApp();
@@ -67,6 +69,16 @@ describe("Magic link router", () => {
       conventionMagicLinkRoutes,
       testApp.request,
     );
+    const jwtGeneratorByKind: { [K in JwtScenario["kind"]]: GenerateJwtFn<K> } =
+      {
+        convention: generateConventionJwt,
+        backOffice: generateBackOfficeJwt,
+        inclusionConnect: generateInclusionConnectJwt,
+      };
+
+    generateJwtForScenario = (scenario: JwtScenario): string =>
+      jwtGeneratorByKind[scenario.kind](scenario.payload as any);
+
     const initialConvention = conventionBuilder.build();
     inMemoryUow.conventionRepository.setConventions({
       [initialConvention.id]: initialConvention,
@@ -99,19 +111,13 @@ describe("Magic link router", () => {
         },
       },
     ])("200 - can update the convention with '$kind' jwt", async (scenario) => {
-      const jwtGeneratorByKind = ({ kind, payload }: JwtScenario) => {
-        if (kind === "backOffice") return generateBackOfficeJwt(payload);
-        if (kind === "convention") return generateConventionJwt(payload);
-        return generateInclusionConnectJwt(payload);
-      };
-
       const response = await sharedRequest.updateConvention({
         body: { convention: updatedConvention },
         urlParams: {
           conventionId: updatedConvention.id,
         },
         headers: {
-          authorization: jwtGeneratorByKind(scenario),
+          authorization: generateJwtForScenario(scenario),
         },
       });
 
@@ -239,23 +245,10 @@ describe("Magic link router", () => {
         },
       };
 
-      const jwtGeneratorByKind = {
-        convention: generateConventionJwt,
-        backOffice: generateBackOfficeJwt,
-        inclusionConnect: generateInclusionConnectJwt,
-      };
-
-      const jwtGeneratorByKind = ({ kind, payload }: JwtScenario) => {
-        if (kind === "backOffice") return generateBackOfficeJwt(payload);
-        if (kind === "convention") return generateConventionJwt(payload);
-        return generateInclusionConnectJwt(payload);
-      };
-
       const response = await sharedRequest.renewConvention({
         body: renewedConventionParams,
         headers: {
-          // authorization: jwtGeneratorByKind[kind](payload),
-          authorization: jwtGeneratorByKind(scenario),
+          authorization: generateJwtForScenario(scenario),
         },
       });
 
