@@ -40,7 +40,7 @@ type JwtMap =
 
 export type JwtKind = JwtMap["kind"];
 
-type GenerateJwtFn<K extends JwtKind> = (
+export type GenerateJwtFn<K extends JwtKind> = (
   payload: Extract<JwtMap, { kind: K }>["payload"],
   expiresInSeconds?: number,
 ) => Extract<JwtMap, { kind: K }>["token"];
