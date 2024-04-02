@@ -24,14 +24,21 @@ jobs:
       #   run: scalingo --app ${{ secrets.SCALINGO_APP }} --region ${{ secrets.SCALINGO_REGION }} --addon ${{ secrets.SCALINGO_DB_ADDON_ID }} backups-download
       # - name: Upload backup to clever
       #
-      - uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.CELLAR_ADDON_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.CELLAR_ADDON_KEY_SECRET }}
-          aws-region: us-east-2
-      - name: Copy files to the production website with the AWS CLI
+      - name: Install AWS CLI
+        # https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
         run: |
-          aws s3 list-objects --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+          aws --version
+      # - uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.CELLAR_ADDON_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.CELLAR_ADDON_KEY_SECRET }}
+      #     aws-region: us-east-2
+      # - name: Copy files to the production website with the AWS CLI
+      #   run: |
+      #     aws s3 list-objects --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev
         #run: |
         #  aws s3 put-object --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev --key cats.png --body ../cats.png --content-type image/png
       
