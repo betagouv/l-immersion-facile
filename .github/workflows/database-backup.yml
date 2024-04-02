@@ -28,8 +28,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.CELLAR_ADDON_KEY_ID }}
           aws-secret-access-key: ${{ secrets.CELLAR_ADDON_KEY_SECRET }}
-          aws-region: us-west-1
+          aws-region: us-east-2
       - name: Copy files to the production website with the AWS CLI
         run: |
           aws s3 list-objects --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev
+        #run: |
+        #  aws s3 put-object --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev --key cats.png --body ../cats.png --content-type image/png
       
