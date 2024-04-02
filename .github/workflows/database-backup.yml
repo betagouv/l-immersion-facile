@@ -35,6 +35,7 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.CELLAR_ADDON_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.CELLAR_ADDON_KEY_SECRET }}
+          aws configure set region us-west-2
       # - uses: aws-actions/configure-aws-credentials@v1
       #   with:
       #     aws-access-key-id: ${{ secrets.CELLAR_ADDON_KEY_ID }}
