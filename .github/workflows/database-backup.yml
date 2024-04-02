@@ -31,14 +31,18 @@ jobs:
           unzip awscliv2.zip
           sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
           aws --version
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.CELLAR_ADDON_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.CELLAR_ADDON_KEY_SECRET }}
       # - uses: aws-actions/configure-aws-credentials@v1
       #   with:
       #     aws-access-key-id: ${{ secrets.CELLAR_ADDON_KEY_ID }}
       #     aws-secret-access-key: ${{ secrets.CELLAR_ADDON_KEY_SECRET }}
       #     aws-region: us-east-2
-      # - name: Copy files to the production website with the AWS CLI
-      #   run: |
-      #     aws s3 list-objects --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev
+      - name: List files to the production website with the AWS CLI
+        run: |
+          aws s3api list-objects --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev
         #run: |
         #  aws s3 put-object --endpoint-url https://cellar-c2.services.clever-cloud.com --bucket immersion-dev --key cats.png --body ../cats.png --content-type image/png
       
