@@ -29,8 +29,8 @@
     "@storybook/react": "7.6.20",
     "@storybook/react-vite": "7.6.20",
     "@storybook/testing-library": "^0.1.0",
-    "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.10",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@types/react-modal": "^3.13.1",
     "babel-loader": "^8.2.5",
     "classnames": "^2.3.1",
@@ -39,11 +39,12 @@
     "react-dom": "^18.0.0",
     "react-modal": "^3.15.1",
     "react-player": "^2.11.0",
+    "react-select": "^5.9.0",
     "require-from-string": "^2.0.2",
     "scss-mapper": "workspace:*",
     "storybook": "7.6.20",
     "tss-react": "^4.5.2",
     "type-route": "^1.0.0",
-    "typescript": "^5.6.2"
+    "typescript": "^5.7.3"
   }
 }

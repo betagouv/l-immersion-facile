@@ -9,6 +9,7 @@ import {
   Loader,
   MainWrapper,
   PageHeader,
+  RSAutocomplete,
   SearchFilter,
   SectionAccordion,
   SectionTextEmbed,
@@ -406,6 +407,12 @@ export const SearchPage = ({
                           recherche dans les résultats.
                         </p>
                       )}
+                      <RSAutocomplete
+                        label="Recherche"
+                        hintText="Recherche"
+                        state="error"
+                        stateRelatedMessage="Recherche"
+                      />
                     </>
                   ),
                 }}

@@ -2,8 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
 
-import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Loader } from "react-design-system";
 import { ConventionEstablishmentRole, InclusionConnectedUser } from "shared";
 import { MetabaseView } from "src/app/components/MetabaseView";
@@ -29,7 +28,7 @@ export const EstablishmentDashboardPage = ({
   route,
 }: {
   route: Route<typeof routes.establishmentDashboard>;
-}): ReactJSXElement => {
+}): ReactNode => {
   const currentUser = useAppSelector(inclusionConnectedSelectors.currentUser);
   const isLoading = useAppSelector(inclusionConnectedSelectors.isLoading);
   const { params } = route;
