@@ -666,6 +666,7 @@ interface EstablishmentsDeleted {
 interface ImmersionAssessments {
   convention_id: string;
   status: string;
+  number_of_hours_actually_made: number | null;
   last_day_of_presence: Timestamp | null;
   number_of_missed_hours: number | null;
   ended_with_a_job: boolean;
