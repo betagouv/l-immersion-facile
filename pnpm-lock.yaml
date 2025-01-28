@@ -154,7 +154,7 @@ importers:
         specifier: ^1.4.7
         version: 1.4.7
       '@types/node':
-        specifier: ^20.15.0
+        specifier: ^20.17.16
         version: 20.17.16
       '@types/node-fetch':
         specifier: ^2.6.11
@@ -265,7 +265,7 @@ importers:
         specifier: ^1.9.12
         version: 1.9.12
       '@types/node':
-        specifier: ^20.15.0
+        specifier: ^20.17.16
         version: 20.17.16
       '@types/papaparse':
         specifier: ^5.3.7
@@ -351,6 +351,9 @@ importers:
       react-redux:
         specifier: ^7.2.8
         version: 7.2.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-select:
+        specifier: ^5.9.0
+        version: 5.9.0(@babel/core@7.20.12)(@types/react@18.3.18)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       redux:
         specifier: ^4.2.0
         version: 4.2.0
@@ -409,7 +412,7 @@ importers:
         specifier: ^29.5.2
         version: 29.5.2
       '@types/node':
-        specifier: ^20.15.0
+        specifier: ^20.17.16
         version: 20.17.16
       typescript:
         specifier: ^5.7.3
@@ -545,7 +548,7 @@ importers:
         specifier: ^29.5.2
         version: 29.5.2
       '@types/node':
-        specifier: ^20.15.0
+        specifier: ^20.17.16
         version: 20.17.16
       '@types/ramda':
         specifier: ^0.30.2
@@ -585,7 +588,7 @@ importers:
         specifier: ^29.5.2
         version: 29.5.2
       '@types/node':
-        specifier: ^20.15.0
+        specifier: ^20.17.16
         version: 20.17.16
       dotenv:
         specifier: ^16.0.0
@@ -619,7 +622,7 @@ importers:
         specifier: ^29.5.2
         version: 29.5.2
       '@types/node':
-        specifier: ^20.15.0
+        specifier: ^20.17.16
         version: 20.17.16
       '@types/ramda':
         specifier: ^0.30.2

@@ -1,0 +1,49 @@
+.im-select {
+  &__menu {
+    width: 100% !important;
+    &-list {
+      width: 100% !important;
+    }
+  }
+  &__value-container {
+    display: block !important;
+  }
+  &__input-container {
+    display: block;
+  }
+  &__placeholder, &__single-value {
+    position: absolute;
+    top: .5rem;
+    left: 1rem;
+  }
+  &__placeholder {
+    font-style: italic;
+    color: var(--grey-425-625);
+  }
+  &__option {
+    &:hover {
+      background-color: var(--hover-tint);
+      cursor: pointer;
+    }
+  }
+  &__menu-notice {
+    color: var(--grey-425-625);
+    padding: 0.5rem 1rem;
+    text-align: left !important;
+  }
+  &__indicators {
+    position: absolute;
+    right: .5rem;
+    top: .5rem;
+    display: flex;
+  }
+  &__indicator {
+    cursor: pointer;
+  }
+  &__control--is-focused {
+    .im-select__single-value {
+      color: var(--grey-425-625) !important;
+    }
+  }
+}
+

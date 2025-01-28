@@ -19,7 +19,7 @@ describe("Geosearch epic", () => {
     ({ store, dependencies } = createTestStore());
   });
 
-  it("should reset the value when the query has been emptied", () => {
+  it("should reset the value and suggestions when the query has been emptied", () => {
     store.dispatch(
       geosearchSlice.actions.suggestionHasBeenSelected({
         label: "Paris",
@@ -31,6 +31,7 @@ describe("Geosearch epic", () => {
     );
     store.dispatch(geosearchSlice.actions.queryWasEmptied());
     expect(store.getState().geosearch.value).toBeNull();
+    expect(store.getState().geosearch.suggestions).toEqual([]);
   });
 
   it("should update the searched query and reset the state", () => {

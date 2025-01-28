@@ -9,7 +9,6 @@ import {
   Loader,
   MainWrapper,
   PageHeader,
-  RSAutocomplete,
   SearchFilter,
   SectionAccordion,
   SectionTextEmbed,
@@ -25,6 +24,7 @@ import {
 } from "shared";
 import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
+import { NafAutocomplete } from "src/app/components/forms/autocomplete/NafAutocomplete";
 import { PlaceAutocomplete } from "src/app/components/forms/autocomplete/PlaceAutocomplete";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
 import { SearchInfoSection } from "src/app/components/search/SearchInfoSection";
@@ -88,9 +88,7 @@ export const SearchPage = ({
   const { enableSearchByScore } = useAppSelector(
     featureFlagSelectors.featureFlagState,
   );
-  const [shouldClearPlaceInput, setShouldClearPlaceInput] = useState(false);
-  const [shouldClearAppellationsInput, setShouldClearAppellationsInput] =
-    useState(false);
+
   const initialValues: SearchPageParams = {
     place: "",
     sortedBy: enableSearchByScore ? "score" : "date",
@@ -229,20 +227,15 @@ export const SearchPage = ({
                     onAppellationSelected={(newAppellationAndRome) => {
                       setValue("appellations", [newAppellationAndRome]);
                     }}
-                    selectedAppellations={
-                      formValues.appellations
-                        ? [formValues.appellations[0]]
-                        : undefined
-                    }
-                    onInputClear={() => {
+                    onAppellationClear={() => {
                       setValue("appellations", undefined);
                     }}
                     id={domElementIds.search.appellationAutocomplete}
-                    placeholder={
-                      useNaturalLanguageForAppellations
-                        ? "Ex: boulanger, faire du pain, etc"
-                        : "Ex: boulanger, styliste, etc"
-                    }
+                    selectProps={{
+                      placeholder: useNaturalLanguageForAppellations
+                        ? "Ex : Boulanger, faire du pain, etc"
+                        : "Ex : Boulanger, styliste, etc",
+                    }}
                     useNaturalLanguage={useNaturalLanguageForAppellations}
                   />
                 </div>
@@ -250,7 +243,7 @@ export const SearchPage = ({
                   <PlaceAutocomplete
                     label={placeInputLabel}
                     initialInputValue={place}
-                    onValueChange={(lookupSearchResult) => {
+                    onPlaceSelected={(lookupSearchResult) => {
                       if (!lookupSearchResult) return;
                       setValue("latitude", lookupSearchResult.position.lat);
                       setValue("longitude", lookupSearchResult.position.lon);
@@ -260,7 +253,7 @@ export const SearchPage = ({
                       }
                     }}
                     id={domElementIds.search.placeAutocompleteInput}
-                    onInputClear={() => {
+                    onPlaceClear={() => {
                       setValue("latitude", initialValues.latitude);
                       setValue("longitude", initialValues.latitude);
                       setValue("place", initialValues.place);
@@ -357,7 +350,6 @@ export const SearchPage = ({
                     appellations: undefined,
                   };
                   onSearchFormSubmit(updatedValues);
-                  setShouldClearAppellationsInput(true);
                 }}
                 submenu={{
                   title: "Quel métier souhaitez-vous découvrir ?",
@@ -377,24 +369,19 @@ export const SearchPage = ({
                             appellations: [newAppellationAndRome],
                           });
                         }}
-                        selectedAppellations={undefined}
-                        onInputClear={() => {
+                        onAppellationClear={() => {
                           setTempValue({
                             ...tempValue,
                             appellations: undefined,
                           });
                         }}
                         id={domElementIds.search.appellationAutocomplete}
-                        placeholder={
-                          useNaturalLanguageForAppellations
-                            ? "Ex: boulanger, faire du pain, etc"
-                            : "Ex: boulanger, styliste, etc"
-                        }
-                        useNaturalLanguage={useNaturalLanguageForAppellations}
-                        shouldClearInput={shouldClearAppellationsInput}
-                        onAfterClearInput={() => {
-                          setShouldClearAppellationsInput(false);
+                        selectProps={{
+                          placeholder: useNaturalLanguageForAppellations
+                            ? "Ex : Boulanger, faire du pain, etc"
+                            : "Ex : Boulanger, styliste, etc",
                         }}
+                        useNaturalLanguage={useNaturalLanguageForAppellations}
                       />
                       {tempValue.appellations?.length && (
                         <p className={fr.cx("fr-hint-text", "fr-mt-2w")}>
@@ -407,11 +394,12 @@ export const SearchPage = ({
                           recherche dans les résultats.
                         </p>
                       )}
-                      <RSAutocomplete
-                        label="Recherche"
-                        hintText="Recherche"
-                        state="error"
-                        stateRelatedMessage="Recherche"
+                      <NafAutocomplete
+                        label="Et / ou un secteur d'activité"
+                        onNafSelected={() => {}}
+                        onNafClear={() => {}}
+                        className={fr.cx("fr-mt-2w")}
+                        initialInputValue={"initial value"}
                       />
                     </>
                   ),
@@ -440,7 +428,6 @@ export const SearchPage = ({
                           distanceKm: undefined,
                         };
                   onSearchFormSubmit(updatedValues);
-                  setShouldClearPlaceInput(true);
                 }}
                 submenu={{
                   title: "Où souhaitez-vous faire votre immersion ?",
@@ -448,12 +435,7 @@ export const SearchPage = ({
                     <>
                       <PlaceAutocomplete
                         label={placeInputLabel}
-                        initialInputValue={place}
-                        shouldClearInput={shouldClearPlaceInput}
-                        onAfterClearInput={() => {
-                          setShouldClearPlaceInput(false);
-                        }}
-                        onValueChange={(lookupSearchResult) => {
+                        onPlaceSelected={(lookupSearchResult) => {
                           if (!lookupSearchResult) return;
                           const newValues = {
                             place: lookupSearchResult.label,
@@ -466,8 +448,7 @@ export const SearchPage = ({
                             distanceKm: tempValue.distanceKm || 10,
                           });
                         }}
-                        id={domElementIds.search.placeAutocompleteInput}
-                        onInputClear={() => {
+                        onPlaceClear={() => {
                           const updatedInitialValues: SearchPageParams =
                             tempValue.sortedBy === "distance"
                               ? {
@@ -492,7 +473,11 @@ export const SearchPage = ({
                             });
                           }
                         }}
+                        className={fr.cx("fr-mt-2w")}
+                        initialInputValue={place}
+                        id={domElementIds.search.placeAutocompleteInput}
                       />
+
                       <Select
                         label="Dans un rayon de :"
                         options={radiusOptions}

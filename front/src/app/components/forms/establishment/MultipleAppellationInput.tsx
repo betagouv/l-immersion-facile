@@ -62,7 +62,10 @@ export const MultipleAppellationInput = ({
                   onAppellationSelected={(selectedAppellation) => {
                     onAppellationAdd(selectedAppellation, index);
                   }}
-                  selectedAppellations={currentAppellations}
+                  onAppellationClear={() => {
+                    onAppellationDelete(index);
+                  }}
+                  id={`${id}-${index}`}
                 />
               </div>
               <Button

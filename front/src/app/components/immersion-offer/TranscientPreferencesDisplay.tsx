@@ -146,7 +146,7 @@ const renderTranscientKeyValues = (data: ContactTranscientData) => {
 
 const renderValue = (
   key: keyof ContactTranscientData,
-  value: unknown,
+  value: boolean | string | number,
 ): React.ReactNode => {
   if (typeof value === "boolean") {
     return value ? "Oui" : "Non";

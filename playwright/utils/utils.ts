@@ -41,10 +41,11 @@ export const fillAutocomplete = async ({
   }
   await page.waitForSelector(`${locator}[aria-controls]`);
   const listboxId = await page.locator(locator).getAttribute("aria-controls");
-  await expect(
-    page.locator(`#${listboxId} .MuiAutocomplete-option`).nth(0),
-  ).toBeVisible();
-  await page.locator(`#${listboxId} .MuiAutocomplete-option`).nth(0).click();
+  const firstOption = page
+    .locator(`#${listboxId} li, .im-select__menu-list li`)
+    .nth(0); // TODO: clean when AdressAutocomplete use react-select
+  await expect(firstOption).toBeVisible();
+  await firstOption.click();
 };
 
 export const logHttpResponse = ({

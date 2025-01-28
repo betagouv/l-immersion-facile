@@ -11,16 +11,16 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { geosearchSelectors } from "src/core-logic/domain/geosearch/geosearch.selectors";
 import { geosearchSlice } from "src/core-logic/domain/geosearch/geosearch.slice";
 
-export type PlaceAutocompleteProps = RSAutocompleteComponentProps<
-  "place",
+export type NafAutocompleteProps = RSAutocompleteComponentProps<
+  "naf",
   LookupSearchResult
 >;
 
-export const PlaceAutocomplete = ({
-  onPlaceSelected,
-  onPlaceClear,
+export const NafAutocomplete = ({
+  onNafSelected,
+  onNafClear,
   ...props
-}: PlaceAutocompleteProps) => {
+}: NafAutocompleteProps) => {
   const dispatch = useDispatch();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -34,27 +34,28 @@ export const PlaceAutocomplete = ({
     <RSAutocomplete
       {...props}
       selectProps={{
-        inputId: props.id ?? "im-select__input--place",
         isLoading: isSearching,
-        loadingMessage: () => <>Recherche de ville en cours... 🔎</>,
         inputValue: searchTerm,
         noOptionsMessage: () => <>Saisissez au moins 3 caractères</>,
-        placeholder: "Ex : Saint-Denis, La Réunion, France",
+        placeholder: "Ex : Administration publique",
         onChange: (
           searchResult: SingleValue<OptionType<LookupSearchResult>>,
           actionMeta: ActionMeta<OptionType<LookupSearchResult>>,
         ) => {
-          if (actionMeta.action === "clear") {
-            geosearchSlice.actions.queryWasEmptied();
-            onPlaceClear();
-          }
           if (searchResult && actionMeta.action === "select-option") {
-            onPlaceSelected(searchResult.value);
+            onNafSelected(searchResult.value);
             dispatch(
               geosearchSlice.actions.suggestionHasBeenSelected(
                 searchResult.value,
               ),
             );
+          }
+          if (
+            actionMeta.action === "clear" ||
+            actionMeta.action === "remove-value"
+          ) {
+            onNafClear();
+            geosearchSlice.actions.queryWasEmptied();
           }
         },
         options,
@@ -63,7 +64,7 @@ export const PlaceAutocomplete = ({
           if (actionMeta.action === "input-change") {
             dispatch(geosearchSlice.actions.queryHasChanged(value));
             if (value === "") {
-              onPlaceClear();
+              onNafClear();
               dispatch(geosearchSlice.actions.queryWasEmptied());
             }
           }

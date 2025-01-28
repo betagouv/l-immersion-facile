@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",
-    "@types/node": "^20.15.0",
+    "@types/node": "^20.17.16",
     "typescript": "^5.7.3"
   }
 }

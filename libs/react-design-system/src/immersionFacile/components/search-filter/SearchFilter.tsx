@@ -56,11 +56,15 @@ export const SearchFilter = ({
     const hasClickedInAutocompleteOption = getElementParentsClasses(
       target,
     ).includes("MuiAutocomplete-option");
+    const hasClickedInIndicators = target
+      .getAttribute("id")
+      ?.includes("react-select");
     if (
       isOpened &&
       wrapperElement.current &&
       !wrapperElement.current.contains(target) &&
-      !hasClickedInAutocompleteOption
+      !hasClickedInAutocompleteOption &&
+      !hasClickedInIndicators
     ) {
       setIsOpened(false);
     }
