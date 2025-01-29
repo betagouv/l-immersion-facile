@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  type OptionType,
   RSAutocomplete,
   type RSAutocompleteComponentProps,
 } from "react-design-system";
-import { ActionMeta, SingleValue } from "react-select";
 import {
   AppellationAndRomeDto,
   AppellationMatchDto,
@@ -106,10 +104,7 @@ export const AppellationAutocomplete = ({
         noOptionsMessage: () =>
           noOptionText({ isSearching, debounceSearchTerm, searchTerm }),
         placeholder: "Ex : Boulanger, styliste, etc.",
-        onChange: (
-          searchResult: SingleValue<OptionType<AppellationAndRomeDto>>,
-          actionMeta: ActionMeta<OptionType<AppellationAndRomeDto>>,
-        ) => {
+        onChange: (searchResult, actionMeta) => {
           if (actionMeta.action === "clear") {
             onAppellationClear();
           }

@@ -1,11 +1,9 @@
 import { useState } from "react";
 import {
-  type OptionType,
   RSAutocomplete,
   type RSAutocompleteComponentProps,
 } from "react-design-system";
 import { useDispatch } from "react-redux";
-import { ActionMeta, SingleValue } from "react-select";
 import { LookupSearchResult } from "shared";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { geosearchSelectors } from "src/core-logic/domain/geosearch/geosearch.selectors";
@@ -40,10 +38,7 @@ export const PlaceAutocomplete = ({
         inputValue: searchTerm,
         noOptionsMessage: () => <>Saisissez au moins 3 caractères</>,
         placeholder: "Ex : Saint-Denis, La Réunion, France",
-        onChange: (
-          searchResult: SingleValue<OptionType<LookupSearchResult>>,
-          actionMeta: ActionMeta<OptionType<LookupSearchResult>>,
-        ) => {
+        onChange: (searchResult, actionMeta) => {
           if (actionMeta.action === "clear") {
             geosearchSlice.actions.queryWasEmptied();
             onPlaceClear();
