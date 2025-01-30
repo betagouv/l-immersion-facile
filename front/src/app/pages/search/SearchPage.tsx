@@ -396,8 +396,18 @@ export const SearchPage = ({
                       )}
                       <NafAutocomplete
                         label="Et / ou un secteur d'activité"
-                        onNafSelected={() => {}}
-                        onNafClear={() => {}}
+                        onNafSelected={(nafSectionSuggestion) => {
+                          setTempValue({
+                            ...tempValue,
+                            nafCodes: nafSectionSuggestion.nafCodes,
+                          });
+                        }}
+                        onNafClear={() => {
+                          setTempValue({
+                            ...tempValue,
+                            nafCodes: undefined,
+                          });
+                        }}
                         className={fr.cx("fr-mt-2w")}
                         initialInputValue={"initial value"}
                       />

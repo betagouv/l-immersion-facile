@@ -14,8 +14,8 @@ import { geosearchSlice } from "./geosearch.slice";
 
 type GeosearchAction = ActionOfSlice<typeof geosearchSlice>;
 
-const queryMinLength = 3;
-const debounceDuration = 500;
+export const queryMinLength = 3;
+export const debounceDuration = 500;
 
 const geosearchQueryEpic: AppEpic<GeosearchAction> = (
   action$,

@@ -4,14 +4,14 @@ import {
   type RSAutocompleteComponentProps,
 } from "react-design-system";
 import { useDispatch } from "react-redux";
-import { LookupSearchResult } from "shared";
+import { NafSectionSuggestion } from "shared";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { geosearchSelectors } from "src/core-logic/domain/geosearch/geosearch.selectors";
-import { geosearchSlice } from "src/core-logic/domain/geosearch/geosearch.slice";
+import { nafSelectors } from "src/core-logic/domain/naf/naf.selectors";
+import { nafSlice } from "src/core-logic/domain/naf/naf.slice";
 
 export type NafAutocompleteProps = RSAutocompleteComponentProps<
   "naf",
-  LookupSearchResult
+  NafSectionSuggestion
 >;
 
 export const NafAutocomplete = ({
@@ -20,47 +20,40 @@ export const NafAutocomplete = ({
   ...props
 }: NafAutocompleteProps) => {
   const dispatch = useDispatch();
-
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const isSearching: boolean = useAppSelector(geosearchSelectors.isLoading);
-  const searchSuggestions = useAppSelector(geosearchSelectors.suggestions);
-  const options = searchSuggestions.map((suggestion) => ({
-    value: suggestion,
-    label: suggestion.label,
-  }));
+  const [searchTerm, setSearchTerm] = useState("");
+  const isLoading = useAppSelector(nafSelectors.isLoading);
+  const options = useAppSelector(nafSelectors.currentNafSections);
   return (
     <RSAutocomplete
       {...props}
       selectProps={{
-        isLoading: isSearching,
+        isLoading,
         inputValue: searchTerm,
         noOptionsMessage: () => <>Saisissez au moins 3 caractères</>,
         placeholder: "Ex : Administration publique",
-        onChange: (searchResult, actionMeta) => {
-          if (searchResult && actionMeta.action === "select-option") {
-            onNafSelected(searchResult.value);
-            dispatch(
-              geosearchSlice.actions.suggestionHasBeenSelected(
-                searchResult.value,
-              ),
-            );
+        onChange: (nafSectionSuggestion, actionMeta) => {
+          if (nafSectionSuggestion && actionMeta.action === "select-option") {
+            onNafSelected(nafSectionSuggestion.value);
           }
           if (
             actionMeta.action === "clear" ||
             actionMeta.action === "remove-value"
           ) {
             onNafClear();
-            geosearchSlice.actions.queryWasEmptied();
+            dispatch(nafSlice.actions.queryWasEmptied());
           }
         },
-        options,
+        options: options.map((option) => ({
+          label: option.label,
+          value: option,
+        })),
         onInputChange: (value, actionMeta) => {
           setSearchTerm(value);
           if (actionMeta.action === "input-change") {
-            dispatch(geosearchSlice.actions.queryHasChanged(value));
+            dispatch(nafSlice.actions.queryHasChanged(value));
             if (value === "") {
               onNafClear();
-              dispatch(geosearchSlice.actions.queryWasEmptied());
+              dispatch(nafSlice.actions.queryWasEmptied());
             }
           }
         },

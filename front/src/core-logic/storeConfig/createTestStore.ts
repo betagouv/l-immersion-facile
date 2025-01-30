@@ -5,6 +5,7 @@ import { InMemoryConventionGateway } from "src/core-logic/adapters/Convention/In
 import { createTestDeviceRepository } from "src/core-logic/adapters/DeviceRepository/createTestDeviceRepository";
 import { TestEstablishmentLeadGateway } from "src/core-logic/adapters/EstablishmentLeadGateway/TestEstablishmentLeadGateway";
 import { TestInclusionConnectedGateway } from "src/core-logic/adapters/InclusionConnected/TestInclusionConnectedGateway";
+import { TestNafGateway } from "src/core-logic/adapters/NafGateway/TestNafGateway";
 import { InMemoryNavigationGateway } from "src/core-logic/adapters/NavigationGateway/InMemoryNavigationGateway";
 import { TestTechnicalGateway } from "src/core-logic/adapters/TechnicalGateway/TestTechnicalGateway";
 import { RootState, createStore } from "src/core-logic/storeConfig/store";
@@ -35,6 +36,7 @@ const createTestDependencies = () =>
     scheduler: new VirtualTimeScheduler(),
     searchGateway: new TestSearchGateway(),
     technicalGateway: new TestTechnicalGateway(),
+    nafGateway: new TestNafGateway(),
   }) satisfies Dependencies;
 
 export const createTestStore = (preloadedState?: Partial<RootState>) => {
