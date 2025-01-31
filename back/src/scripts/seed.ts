@@ -256,6 +256,7 @@ const establishmentSeed = async (uow: UnitOfWork) => {
         ])
         .withSiret("34493368400021")
         .withName("France Merguez Distribution")
+        .withNafDto({ code: "1013A", nomenclature: "rev2" }) // NAF Section :Industrie manufacturière
         .build(),
     )
     .withOffers([
@@ -280,6 +281,7 @@ const establishmentSeed = async (uow: UnitOfWork) => {
       new EstablishmentEntityBuilder()
         .withSiret("50056940501696")
         .withName("Decathlon france")
+        .withNafDto({ code: "4764Z", nomenclature: "rev2" }) // NAF Section : Commerce ; réparation d'automobiles et de motocycles
         .build(),
     )
     .withOffers([
