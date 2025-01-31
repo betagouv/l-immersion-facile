@@ -10,21 +10,17 @@ import {
   LocationId,
   NafCode,
   RomeCode,
-  SearchResultDto,
   SearchSortedBy,
   SiretDto,
   castError,
   errors,
   pipeWithValue,
-  searchResultSchema,
 } from "shared";
 import {
   KyselyDb,
-  executeKyselyRawSqlQuery,
   jsonBuildObject,
   jsonStripNulls,
 } from "../../../config/pg/kysely/kyselyUtils";
-import { optional } from "../../../config/pg/pgUtils";
 import { createLogger } from "../../../utils/logger";
 import { EstablishmentAggregate } from "../entities/EstablishmentAggregate";
 import { EstablishmentEntity } from "../entities/EstablishmentEntity";
@@ -34,8 +30,9 @@ import {
   EstablishmentAggregateFilters,
   EstablishmentAggregateRepository,
   OfferWithSiret,
+  RepositorySearchImmertionResult,
+  RepositorySearchResultDto,
   SearchImmersionParams,
-  SearchImmersionResult,
   UpdateEstablishmentsWithInseeDataParams,
 } from "../ports/EstablishmentAggregateRepository";
 import { hasSearchGeoParams } from "../use-cases/SearchImmersion";
@@ -306,19 +303,17 @@ export class PgEstablishmentAggregateRepository
     searchMade,
     maxResults,
     fitForDisabledWorkers,
-  }: SearchImmersionParams): Promise<SearchImmersionResult[]> {
-    const around =
-      "lat" in searchMade
-        ? pick(["lat", "lon", "distanceKm"], searchMade)
-        : undefined;
-
+  }: SearchImmersionParams): Promise<RepositorySearchImmertionResult[]> {
     const results = await searchImmersionResultsQuery(this.transaction, {
       limit:
         maxResults && maxResults < MAX_RESULTS_HARD_LIMIT
           ? maxResults
           : MAX_RESULTS_HARD_LIMIT,
       filters: {
-        geoParams: around,
+        geoParams:
+          "lat" in searchMade
+            ? pick(["lat", "lon", "distanceKm"], searchMade)
+            : undefined,
         searchableBy: searchMade.establishmentSearchableBy,
         fitForDisabledWorkers,
         nafCodes: searchMade.nafCodes,
@@ -331,32 +326,31 @@ export class PgEstablishmentAggregateRepository
       sortedBy: searchMade.sortedBy ?? "date",
     });
 
-    return results.map(
-      ({ search_immersion_result }): SearchImmersionResult => ({
-        ...(search_immersion_result as SearchImmersionResult),
-        nextAvailabilityDate: search_immersion_result.nextAvailabilityDate
-          ? new Date(search_immersion_result.nextAvailabilityDate).toISOString()
-          : undefined,
-        customizedName: search_immersion_result.customizedName ?? undefined,
-      }),
-    );
+    return pgSearchResultsToSearchResults(results);
   }
 
   public async getSearchResultBySearchQuery(
     siret: SiretDto,
     appellationCode: AppellationCode,
     locationId: LocationId,
-  ): Promise<SearchResultDto | undefined> {
-    const immersionSearchResultDtos =
-      await this.#selectImmersionSearchResultDto(
+  ): Promise<RepositorySearchResultDto | undefined> {
+    const results = await searchImmersionResultsQuery(this.transaction, {
+      limit: 1,
+      sortedBy: "date",
+      filters: {
         siret,
         appellationCode,
         locationId,
-      );
-    const immersionSearchResultDto = immersionSearchResultDtos.at(0);
-    if (!immersionSearchResultDto) return;
-    const { isSearchable: _, ...rest } = immersionSearchResultDto;
-    return searchResultSchema.parse(rest);
+      },
+    });
+
+    const searchResult = pgSearchResultsToSearchResults(results).at(0);
+
+    if (!searchResult) return;
+
+    const { isSearchable: _, nextAvailabilityDate: __, ...rest } = searchResult;
+
+    return rest;
   }
 
   public async updateEstablishmentAggregate(
@@ -465,132 +459,6 @@ export class PgEstablishmentAggregateRepository
       .execute();
 
     await this.#insertLocations(establishment);
-  }
-
-  async #selectImmersionSearchResultDto(
-    siret: SiretDto,
-    appellationCode: AppellationCode,
-    locationId: LocationId,
-  ): Promise<SearchImmersionResult[]> {
-    //TODO make query through kysely
-    const pgResult = await executeKyselyRawSqlQuery(
-      this.transaction,
-      `WITH 
-        unique_establishments_contacts AS ( 
-          SELECT DISTINCT ON (siret) siret, user_id 
-          FROM establishments__users
-          WHERE role = 'establishment-admin'
-        ), 
-        match_immersion_offer AS (
-          SELECT 
-          io.siret,
-          pad.code_rome as rome_code,
-          prd.libelle_rome as rome_label,
-          (JSON_AGG (JSON_BUILD_OBJECT(
-            'appellationCode', ogr_appellation::text,
-            'appellationLabel', libelle_appellation_long
-          ) ORDER BY ogr_appellation)) AS appellations,
-          null AS distance_m,
-          1 AS row_number,
-          loc_inf.*,
-          loc_inf.id AS location_id,
-          loc_pos.position,
-          e.score,
-          e.naf_code,
-          e.is_max_discussions_for_period_reached	,
-          date_to_iso(e.next_availability_date) as next_availability_date,
-          e.name,
-          e.website,
-          e.additional_information,
-          e.customized_name,
-          e.fit_for_disabled_workers,
-          e.number_employees,
-          e.contact_mode
-        FROM immersion_offers AS io
-        LEFT JOIN establishments e ON io.siret = e.siret
-        LEFT JOIN public_appellations_data AS pad ON pad.ogr_appellation = io.appellation_code 
-        LEFT JOIN public_romes_data AS prd ON prd.code_rome = pad.code_rome 
-        LEFT JOIN establishments_location_infos AS loc_inf ON loc_inf.establishment_siret = io.siret
-        LEFT JOIN establishments_location_positions AS loc_pos ON loc_inf.id = loc_pos.id
-        WHERE io.siret = $1 AND io.appellation_code = $2 AND loc_inf.id = $3
-        GROUP BY (io.siret, pad.code_rome, prd.libelle_rome, e.naf_code, e.is_max_discussions_for_period_reached	, e.next_availability_date, e.name, e.website,
-          e.additional_information, e.customized_name, e.fit_for_disabled_workers, e.number_employees, e.score, e.contact_mode, 
-          loc_pos.id, loc_inf.id )
-        ),
-        establishment_locations_agg AS (
-          SELECT
-            establishment_siret,
-            JSON_AGG(
-              JSON_BUILD_OBJECT(
-                'id', id,
-                'position', JSON_BUILD_OBJECT('lon', lon, 'lat', lat),
-                'address', JSON_BUILD_OBJECT(
-                    'streetNumberAndAddress', street_number_and_address,
-                    'postcode', post_code,
-                    'city', city,
-                    'departmentCode', department_code
-                )
-              )
-            ) AS locations
-          FROM establishments_location_infos
-          GROUP BY establishment_siret
-        )
-      SELECT 
-        row_number,
-        JSON_STRIP_NULLS(JSON_BUILD_OBJECT(
-          'rome', io.rome_code,
-          'siret', io.siret,
-          'establishmentScore', io.score,
-          'distance_m', io.distance_m,
-          'isSearchable', NOT io.is_max_discussions_for_period_reached	,
-          'nextAvailabilityDate', io.next_availability_date,
-          'name', io.name,
-          'website', io.website,
-          'additionalInformation', io.additional_information,
-          'customizedName', io.customized_name,
-          'fitForDisabledWorkers', io.fit_for_disabled_workers,
-          'romeLabel', io.rome_label,
-          'appellations',  io.appellations,
-          'naf', io.naf_code,
-          'nafLabel', public_naf_rev2_sous_classes.libelle,
-          'address', JSON_BUILD_OBJECT(
-            'streetNumberAndAddress', io.street_number_and_address,
-            'postcode', io.post_code,
-            'city', io.city,
-            'departmentCode', io.department_code
-            ),
-          'position', JSON_BUILD_OBJECT('lon', io.lon, 'lat', io.lat),
-          'locationId', io.location_id,
-          'contactMode', io.contact_mode,
-          'numberOfEmployeeRange', io.number_employees
-        )) AS search_immersion_result
-      FROM match_immersion_offer AS io   
-      LEFT JOIN public_naf_rev2_sous_classes ON public_naf_rev2_sous_classes.naf_code = io.naf_code
-      LEFT JOIN unique_establishments_contacts AS uec ON uec.siret = io.siret
-      LEFT JOIN establishments__users AS ec ON ec.user_id = uec.user_id
-      ORDER BY row_number ASC, io.location_id ASC;`,
-      [siret, appellationCode, locationId],
-    );
-
-    return pgResult.rows.map(
-      (row): SearchImmersionResult => ({
-        ...row.search_immersion_result,
-        // TODO : find a way to return 'undefined' instead of 'null' from query
-        customizedName: optional(row.search_immersion_result.customizedName),
-        contactMode: optional(row.search_immersion_result.contactMode),
-        distance_m: optional(row.search_immersion_result.distance_m),
-        numberOfEmployeeRange: optional(
-          row.search_immersion_result.numberOfEmployeeRange,
-        ),
-        fitForDisabledWorkers: optional(
-          row.search_immersion_result.fitForDisabledWorkers,
-        ),
-        voluntaryToImmersion: true,
-        isSearchable: row.search_immersion_result.isSearchable,
-        nextAvailabilityDate: row.search_immersion_result.nextAvailabilityDate,
-        locationId: row.search_immersion_result.locationId,
-      }),
-    );
   }
 
   async #insertEstablishmentFromAggregate(aggregate: EstablishmentAggregate) {
@@ -843,6 +711,10 @@ const makeEstablishmentAggregateFromDb = (
   };
 };
 
+type SearchImmersionResultsQueryResult = Awaited<
+  ReturnType<typeof searchImmersionResultsQuery>
+>;
+
 const searchImmersionResultsQuery = (
   transaction: KyselyDb,
   {
@@ -851,20 +723,29 @@ const searchImmersionResultsQuery = (
     limit,
   }: {
     limit: number;
-    filters?: {
+    filters: {
       fitForDisabledWorkers?: boolean;
       searchableBy?: EstablishmentSearchableByValue;
       romeCodes?: RomeCode[];
       geoParams?: GeoParams;
       nafCodes?: NafCode[];
+      siret?: SiretDto;
+      appellationCode?: AppellationCode;
+      locationId?: LocationId;
     };
     sortedBy: SearchSortedBy;
   },
 ) => {
-  const geoParams = filters?.geoParams;
-  const searchableBy = filters?.searchableBy;
-  const fitForDisabledWorkers = filters?.fitForDisabledWorkers;
-  const nafCodes = filters?.nafCodes;
+  const {
+    appellationCode,
+    fitForDisabledWorkers,
+    geoParams,
+    locationId,
+    nafCodes,
+    romeCodes,
+    searchableBy,
+    siret,
+  } = filters;
 
   const query = transaction
     .with("filtered_results", (qb) =>
@@ -888,6 +769,8 @@ const searchImmersionResultsQuery = (
                       fitForDisabledWorkers ? "is" : "is not",
                       true,
                     ),
+              (qb) =>
+                siret ? qb.where("establishments.siret", "=", siret) : qb,
               (qb) => {
                 if (searchableBy === "jobSeekers")
                   return qb.whereRef(
@@ -902,7 +785,7 @@ const searchImmersionResultsQuery = (
               (qb) => {
                 if (
                   !hasSearchGeoParams(filters?.geoParams ?? {}) &&
-                  !filters?.romeCodes &&
+                  !romeCodes &&
                   (sortedBy === "date" || sortedBy === "score")
                 ) {
                   // this is in the case when NO filters are provided, to avoid doing the joins on the whole table when we will only keep 100 results in the end
@@ -945,6 +828,14 @@ const searchImmersionResultsQuery = (
                         ]),
                       )
                     : eb,
+                (eb) =>
+                  locationId
+                    ? eb.where(
+                        "establishments_location_infos.id",
+                        "=",
+                        locationId,
+                      )
+                    : eb,
               ).as("loc"),
             (join) => join.onRef("loc.siret", "=", "e.siret"),
           )
@@ -965,11 +856,19 @@ const searchImmersionResultsQuery = (
                     "appellation_code",
                   ]),
                 (eb) =>
-                  filters?.romeCodes
+                  romeCodes
                     ? eb.where(
                         "public_appellations_data.code_rome",
                         "in",
-                        filters.romeCodes,
+                        romeCodes,
+                      )
+                    : eb,
+                (eb) =>
+                  appellationCode
+                    ? eb.where(
+                        "immersion_offers.appellation_code",
+                        "=",
+                        parseInt(appellationCode),
                       )
                     : eb,
               ).as("offer"),
@@ -1205,3 +1104,40 @@ const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
     )
     .groupBy("e.siret")
     .orderBy("e.siret asc");
+
+//TODO : revoir la query kysely, il y a des soucis de typage d'où cette fonction
+const pgSearchResultsToSearchResults = (
+  results: SearchImmersionResultsQueryResult,
+): RepositorySearchImmertionResult[] =>
+  results.map(({ search_immersion_result: result }) => {
+    if (!result.naf) throw new Error("Missing naf.");
+    if (!result.name) throw new Error("Missing name.");
+
+    return {
+      address: result.address,
+      appellations: result.appellations,
+      establishmentScore: result.establishmentScore,
+      locationId: result.locationId,
+      naf: result.naf,
+      nafLabel: result.nafLabel,
+      additionalInformation: result.additionalInformation,
+      contactMode: result.contactMode,
+      createdAt: result.createdAt,
+      name: result.name,
+      position: result.position,
+      rome: result.rome,
+      romeLabel: result.romeLabel,
+      siret: result.siret,
+      voluntaryToImmersion: Boolean(result.voluntaryToImmersion),
+      isSearchable: Boolean(result.isSearchable),
+      customizedName: result.customizedName,
+      distance_m: result.distance_m,
+      fitForDisabledWorkers: result.fitForDisabledWorkers,
+      nextAvailabilityDate: result.nextAvailabilityDate
+        ? new Date(result.nextAvailabilityDate).toISOString()
+        : undefined,
+      numberOfEmployeeRange: result.numberOfEmployeeRange,
+      updatedAt: result.updatedAt,
+      website: result.website,
+    };
+  });

@@ -1,7 +1,8 @@
-import { Location, SearchResultDto } from "shared";
+import { Location } from "shared";
 import { EstablishmentAggregate } from "../entities/EstablishmentAggregate";
 import { OfferEntity } from "../entities/OfferEntity";
 import { OfferEntityBuilder } from "../helpers/EstablishmentBuilders";
+import { RepositorySearchResultDto } from "../ports/EstablishmentAggregateRepository";
 
 export const makeExpectedSearchResult = ({
   establishment: establishmentAggregate,
@@ -13,7 +14,7 @@ export const makeExpectedSearchResult = ({
   withOffers: OfferEntity[];
   withLocationAndDistance: Location & { distance?: number };
   nafLabel: string;
-}): SearchResultDto => {
+}): RepositorySearchResultDto => {
   const firstOffer = withOffers.at(0);
   if (!firstOffer)
     throw new Error(
@@ -50,12 +51,12 @@ export const makeExpectedSearchResult = ({
       !establishmentAggregate.establishment.isMaxDiscussionsForPeriodReached, // <<<<< Donnée renvoyée actuellement alors que pas spécifié dans le DTO?!
     updatedAt: establishmentAggregate.establishment.updatedAt?.toISOString(),
     createdAt: establishmentAggregate.establishment.createdAt.toISOString(),
-  } as SearchResultDto; // d'où le as
+  } as RepositorySearchResultDto; // d'où le as
 };
 
 export const sortSearchResultsByDistanceAndRomeAndSiretOnRandomResults = (
-  a: SearchResultDto,
-  b: SearchResultDto,
+  a: RepositorySearchResultDto,
+  b: RepositorySearchResultDto,
 ): number => {
   if (a.distance_m && b.distance_m) {
     if (a.distance_m > b.distance_m) return 1;

@@ -15,19 +15,6 @@ export const pgShortLinkRepositorySchema: z.Schema<PgShortLinkRepositoryDto> =
     created_at: z.date(),
   });
 
-export const pgGetShortLinkByIdResultsSchema: z.Schema<
-  PgShortLinkRepositoryDto[]
-> = z.array(pgShortLinkRepositorySchema);
-
-export const pgShortLinkRepositoryStructure = {
-  tableName: "short_links",
-  columnNames: {
-    shortLinkId: "short_link_id",
-    url: "url",
-    createAt: "created_at",
-  },
-};
-
 export const insertShortLinkQuery = async (
   db: KyselyDb,
   shortLinkId: ShortLinkId,
