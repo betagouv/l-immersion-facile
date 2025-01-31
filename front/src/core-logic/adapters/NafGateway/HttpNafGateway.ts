@@ -14,7 +14,7 @@ export class HttpNafGateway implements NafGateway {
   getNafSuggestions$(searchText: string): Observable<NafSectionSuggestion[]> {
     return from(
       this.httpClient
-        .sectionSuggestions({
+        .nafSectionSuggestions({
           queryParams: {
             searchText,
           },
