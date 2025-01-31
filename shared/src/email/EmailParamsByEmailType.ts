@@ -122,6 +122,7 @@ export type EmailParamsByEmailType = {
     conventionDateEnd: DateString;
     internshipKind: InternshipKind;
     assessment: AssessmentDtoCompleted | AssessmentDtoPartiallyCompleted;
+    immersionAppellationLabel: string;
     numberOfHoursMade: string;
   };
   ASSESSMENT_CREATED_WITH_STATUS_DID_NOT_SHOW_AGENCY_NOTIFICATION: {

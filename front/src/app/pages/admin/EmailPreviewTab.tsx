@@ -476,6 +476,7 @@ export const defaultEmailValueByEmailKind: {
     businessName: "BUSINESS_NAME",
     conventionId: "CONVENTION_ID",
     conventionDateEnd: new Date("2025-01-13").toISOString(),
+    immersionAppellationLabel: "APPELLATION_LABEL",
     assessment: {
       conventionId: "conv-id",
       status: "PARTIALLY_COMPLETED",

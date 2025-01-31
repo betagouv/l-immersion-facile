@@ -234,6 +234,7 @@ export const emailTemplatesByName =
         conventionDateEnd,
         immersionObjective,
         internshipKind,
+        immersionAppellationLabel,
         assessment,
         numberOfHoursMade,
       }) => {
@@ -250,6 +251,7 @@ export const emailTemplatesByName =
             internshipKind === "immersion" ? "immersion" : "mini-stage"
           } au sein de l'entreprise ${businessName}.
   
+          <strong>Métier observé : ${immersionAppellationLabel}</strong>
           <strong>Objectif ${
             internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
           } : ${immersionObjective}
