@@ -12,6 +12,11 @@ import { EstablishmentEntity } from "../entities/EstablishmentEntity";
 import { OfferEntity } from "../entities/OfferEntity";
 import { SearchMade } from "../entities/SearchMadeEntity";
 
+export type RepositorySearchResultDto = Omit<SearchResultDto, "urlOfPartner">;
+export type RepositorySearchImmertionResult = Omit<
+  SearchImmersionResult,
+  "urlOfPartner"
+>;
 export type OfferWithSiret = OfferEntity & { siret: SiretDto };
 export type SearchImmersionResult = SearchResultDto & {
   isSearchable: boolean;
@@ -61,10 +66,10 @@ export interface EstablishmentAggregateRepository {
     siret: SiretDto,
     appellationCode: AppellationCode,
     locationId: LocationId,
-  ): Promise<SearchResultDto | undefined>;
+  ): Promise<RepositorySearchResultDto | undefined>;
   searchImmersionResults(
     searchImmersionParams: SearchImmersionParams,
-  ): Promise<SearchImmersionResult[]>;
+  ): Promise<RepositorySearchImmertionResult[]>;
 
   //Sirets
   getSiretsOfEstablishmentsWithRomeCode(rome: string): Promise<SiretDto[]>;

@@ -1578,6 +1578,10 @@ describe("PgEstablishmentAggregateRepository", () => {
             locationId:
               establishmentWithOfferA1101_AtPosition.establishment.locations[0]
                 .id,
+            createdAt:
+              establishmentWithOfferA1101_AtPosition.establishment.createdAt.toISOString(),
+            updatedAt:
+              establishmentWithOfferA1101_AtPosition.establishment.updatedAt.toISOString(),
           },
         );
       });
