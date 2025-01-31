@@ -222,16 +222,12 @@ const getPageByRouteName: {
   ),
 };
 
-export const Router = () => {
+export const Router = (): React.ReactNode => {
   const route = useRoute();
   const routeName = route.name;
-  return (
-    <>
-      {routeName === false ? (
-        <ErrorPage type="httpClientNotFoundError" />
-      ) : (
-        getPageByRouteName[routeName](route as Route<unknown>)
-      )}
-    </>
+  return routeName === false ? (
+    <ErrorPage type="httpClientNotFoundError" />
+  ) : (
+    (getPageByRouteName[routeName](route as Route<unknown>) as React.ReactNode)
   );
 };

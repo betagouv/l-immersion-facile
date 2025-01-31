@@ -9,6 +9,7 @@ import {
   establishmentRoutes,
   formCompletionRoutes,
   inclusionConnectedAllowedRoutes,
+  nafRoutes,
   searchImmersionRoutes,
   technicalRoutes,
   unauthenticatedConventionRoutes,
@@ -26,6 +27,7 @@ import { HttpEstablishmentGateway } from "src/core-logic/adapters/EstablishmentG
 import { HttpEstablishmentLeadGateway } from "src/core-logic/adapters/EstablishmentLeadGateway/HttpEstablishmentLeadGateway";
 import { HttpFormCompletionGateway } from "src/core-logic/adapters/FormCompletionGateway/HttpFormCompletionGateway";
 import { HttpInclusionConnectedGateway } from "src/core-logic/adapters/InclusionConnected/HttpInclusionConnectedGateway";
+import { HttpNafGateway } from "src/core-logic/adapters/NafGateway/HttpNafGateway";
 import { HttpSearchGateway } from "src/core-logic/adapters/SearchGateway/HttpSearchGateway";
 import { HttpTechnicalGateway } from "src/core-logic/adapters/TechnicalGateway/HttpTechnicalGateway";
 
@@ -84,5 +86,6 @@ export const createHttpDependencies = (): Dependencies => {
       createAxiosHttpClientOnSlashApi(technicalRoutes),
       axiosOnSlashApi,
     ),
+    nafGateway: new HttpNafGateway(createAxiosHttpClientOnSlashApi(nafRoutes)),
   };
 };

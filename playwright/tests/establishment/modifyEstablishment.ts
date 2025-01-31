@@ -211,12 +211,12 @@ const step4AImmersionOffer = async (
   ); // twice, to remove the second address
 
   await page.fill(
-    `#${domElementIds.establishment.edit.appellations} .fr-input`,
+    `#${domElementIds.establishment.edit.appellations} .im-select__input`,
     "buchero",
   );
   await page
     .locator(
-      `#${domElementIds.establishment.edit.appellations} .MuiAutocomplete-option`,
+      `#${domElementIds.establishment.edit.appellations} .im-select__option`,
     )
     .first()
     .click();

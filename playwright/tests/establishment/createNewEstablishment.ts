@@ -85,12 +85,12 @@ export const createNewEstablishment =
       `#${domElementIds.establishment.create.appellations}-add-option-button`,
     );
     await page.fill(
-      `#${domElementIds.establishment.create.appellations} .fr-input`,
+      `#${domElementIds.establishment.create.appellations} .im-select__input`,
       "boulang",
     );
     await page
       .locator(
-        `#${domElementIds.establishment.create.appellations} .MuiAutocomplete-option`,
+        `#${domElementIds.establishment.create.appellations} .im-select__option`,
       )
       .first()
       .click();

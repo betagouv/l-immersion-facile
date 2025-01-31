@@ -16,6 +16,7 @@ import { EstablishmentGateway } from "src/core-logic/ports/EstablishmentGateway"
 import { EstablishmentLeadGateway } from "src/core-logic/ports/EstablishmentLeadGateway";
 import { FormCompletionGateway } from "src/core-logic/ports/FormCompletionGateway";
 import { InclusionConnectedGateway } from "src/core-logic/ports/InclusionConnectedGateway";
+import { NafGateway } from "src/core-logic/ports/NafGateway";
 import { NavigationGateway } from "src/core-logic/ports/NavigationGateway";
 import { SearchGateway } from "src/core-logic/ports/SearchGateway";
 import { TechnicalGateway } from "src/core-logic/ports/TechnicalGateway";
@@ -38,6 +39,7 @@ export type Dependencies = {
   sessionDeviceRepository: DeviceRepository<SessionStoragePair>;
   minSearchResultsToPreventRefetch: number;
   scheduler: SchedulerLike;
+  nafGateway: NafGateway;
 };
 
 const dependencies =

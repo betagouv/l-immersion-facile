@@ -68,18 +68,8 @@ export const ConventionFormProfession = ({
               appellation.appellationLabel,
             );
           }}
-          selectedAppellations={[
-            {
-              romeLabel: getValues().immersionAppellation?.romeLabel ?? "",
-              romeCode: getValues().immersionAppellation?.romeCode ?? "",
-              appellationCode:
-                getValues().immersionAppellation?.appellationCode ?? "",
-              appellationLabel:
-                getValues().immersionAppellation?.appellationLabel ?? "",
-            },
-          ]}
           hintText={hintText}
-          onInputClear={() => {
+          onAppellationClear={() => {
             setValue("immersionAppellation.romeCode", "");
             setValue("immersionAppellation.romeLabel", "");
             setValue("immersionAppellation.appellationCode", "");

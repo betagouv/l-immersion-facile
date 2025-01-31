@@ -38,6 +38,8 @@ import { featureFlagsSlice } from "src/core-logic/domain/featureFlags/featureFla
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { inclusionConnectedEpics } from "src/core-logic/domain/inclusionConnected/inclusionConnected.epics";
 import { inclusionConnectedSlice } from "src/core-logic/domain/inclusionConnected/inclusionConnected.slice";
+import { nafEpics } from "src/core-logic/domain/naf/naf.epics";
+import { nafSlice } from "src/core-logic/domain/naf/naf.slice";
 import { rootAppEpics } from "src/core-logic/domain/rootApp/rootApp.epics";
 import { rootAppSlice } from "src/core-logic/domain/rootApp/rootApp.slice";
 import { searchEpics } from "src/core-logic/domain/search/search.epics";
@@ -88,6 +90,7 @@ const allEpics: AppEpic<any>[] = [
   ...updateAgencyEpics,
   ...createUserOnAgencyEpics,
   ...removeUserFromAgencyEpics,
+  ...nafEpics,
 ];
 
 const appReducer = combineReducers({
@@ -123,6 +126,7 @@ const appReducer = combineReducers({
   [partnersErroredConventionSlice.name]: partnersErroredConventionSlice.reducer,
   [searchSlice.name]: searchSlice.reducer,
   [siretSlice.name]: siretSlice.reducer,
+  [nafSlice.name]: nafSlice.reducer,
 });
 
 const rootReducer: typeof appReducer = (state, action) =>
