@@ -1,5 +1,4 @@
 import {
-  CompiledQuery,
   Expression,
   ExpressionWrapper,
   Kysely,
@@ -8,7 +7,7 @@ import {
   Simplify,
   sql,
 } from "kysely";
-import { Pool, QueryResultRow } from "pg";
+import { Pool } from "pg";
 import { Falsy } from "ramda";
 import { createLogger } from "../../../utils/logger";
 import { notifyErrorObjectToTeam } from "../../../utils/notifyTeam";
@@ -36,11 +35,6 @@ type StripNullRecursive<T> = {
 export const jsonStripNulls = <T>(
   obj: RawBuilder<T>,
 ): RawBuilder<StripNullRecursive<T>> => sql`json_strip_nulls(${obj})`;
-export const executeKyselyRawSqlQuery = <T extends QueryResultRow>(
-  transaction: KyselyDb,
-  sqlQuery: string,
-  values?: any[],
-) => transaction.executeQuery<T>(CompiledQuery.raw(sqlQuery, values));
 
 type KyselyOptions = {
   skipErrorLog?: boolean;
