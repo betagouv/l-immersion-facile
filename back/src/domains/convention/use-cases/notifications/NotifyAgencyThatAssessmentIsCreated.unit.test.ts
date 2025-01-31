@@ -126,10 +126,13 @@ describe("NotifyAgencyThatAssessmentIsCreated", () => {
             businessName: convention.businessName,
             internshipKind: convention.internshipKind,
             conventionDateEnd: convention.dateEnd,
+            immersionAppellationLabel:
+              convention.immersionAppellation.appellationLabel,
             assessment,
             numberOfHoursMade: "66h",
           },
           recipients: [validator.email, validator2.email],
+          cc: [convention.signatories.beneficiary.email],
         },
       ],
     });
@@ -173,8 +176,11 @@ describe("NotifyAgencyThatAssessmentIsCreated", () => {
             beneficiaryLastName: convention.signatories.beneficiary.lastName,
             businessName: convention.businessName,
             internshipKind: convention.internshipKind,
+            immersionAppellationLabel:
+              convention.immersionAppellation.appellationLabel,
           },
           recipients: [validator.email, validator2.email],
+          cc: [convention.signatories.beneficiary.email],
         },
       ],
     });

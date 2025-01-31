@@ -122,6 +122,7 @@ export type EmailParamsByEmailType = {
     conventionDateEnd: DateString;
     internshipKind: InternshipKind;
     assessment: AssessmentDtoCompleted | AssessmentDtoPartiallyCompleted;
+    immersionAppellationLabel: string;
     numberOfHoursMade: string;
   };
   ASSESSMENT_CREATED_WITH_STATUS_DID_NOT_SHOW_AGENCY_NOTIFICATION: {
@@ -131,6 +132,7 @@ export type EmailParamsByEmailType = {
     beneficiaryLastName: string;
     businessName: string;
     internshipKind: InternshipKind;
+    immersionAppellationLabel: string;
   };
   BENEFICIARY_OR_ESTABLISHMENT_REPRESENTATIVE_ALREADY_SIGNED_NOTIFICATION: {
     agencyLogoUrl: AbsoluteUrl | undefined;

@@ -476,6 +476,7 @@ export const defaultEmailValueByEmailKind: {
     businessName: "BUSINESS_NAME",
     conventionId: "CONVENTION_ID",
     conventionDateEnd: new Date("2025-01-13").toISOString(),
+    immersionAppellationLabel: "APPELLATION_LABEL",
     assessment: {
       conventionId: "conv-id",
       status: "PARTIALLY_COMPLETED",
@@ -498,6 +499,7 @@ export const defaultEmailValueByEmailKind: {
     conventionId: "CONVENTION_ID",
     immersionObjective: "Confirmer un projet professionnel",
     internshipKind: "immersion",
+    immersionAppellationLabel: "APPELLATION_LABEL",
   },
   NEW_CONVENTION_AGENCY_NOTIFICATION: {
     internshipKind: "immersion",
