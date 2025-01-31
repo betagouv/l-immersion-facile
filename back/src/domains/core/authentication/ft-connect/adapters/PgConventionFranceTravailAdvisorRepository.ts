@@ -1,8 +1,5 @@
 import { ConventionId, FtExternalId } from "shared";
-import {
-  KyselyDb,
-  executeKyselyRawSqlQuery,
-} from "../../../../../config/pg/kysely/kyselyUtils";
+import { KyselyDb } from "../../../../../config/pg/kysely/kyselyUtils";
 import { createLogger } from "../../../../../utils/logger";
 import { parseZodSchemaAndLogErrorOnParsingFailure } from "../../../../../utils/schema.utils";
 import {
@@ -30,19 +27,17 @@ export class PgConventionFranceTravailAdvisorRepository
     conventionId: ConventionId,
     peExternalId: FtExternalId,
   ): Promise<ConventionAndFtExternalIds> {
-    const pgResult = await executeKyselyRawSqlQuery(
-      this.transaction,
-      `
-      UPDATE partners_pe_connect
-      SET convention_id = $1
-      WHERE user_pe_external_id = $2
-      AND convention_id = $3`,
-      [conventionId, peExternalId, CONVENTION_ID_DEFAULT_UUID],
-    );
+    const result = await this.transaction
+      .updateTable("partners_pe_connect")
+      .set({ convention_id: conventionId })
+      .where("user_pe_external_id", "=", peExternalId)
+      .where("convention_id", "=", CONVENTION_ID_DEFAULT_UUID)
+      .returning("convention_id")
+      .execute();
 
-    if (Number(pgResult.numAffectedRows) !== 1)
+    if (result.length !== 1)
       throw new Error(
-        `Association between Convention and userAdvisor failed. rowCount: ${pgResult.rows.length}, conventionId: ${conventionId}, peExternalId: ${peExternalId}`,
+        `Association between Convention and userAdvisor failed. rowCount: ${result.length}, conventionId: ${conventionId}, peExternalId: ${peExternalId}`,
       );
 
     return {
@@ -54,16 +49,19 @@ export class PgConventionFranceTravailAdvisorRepository
   public async getByConventionId(
     conventionId: ConventionId,
   ): Promise<ConventionFtUserAdvisorEntity | undefined> {
-    const pgResult =
-      await executeKyselyRawSqlQuery<PgConventionFranceTravailUserAdvisorDto>(
-        this.transaction,
-        `SELECT *
-       FROM partners_pe_connect
-       WHERE convention_id = $1`,
-        [conventionId],
-      );
+    const result = await this.transaction
+      .selectFrom("partners_pe_connect")
+      .where("convention_id", "=", conventionId)
+      .select([
+        "user_pe_external_id",
+        "convention_id",
+        "firstname",
+        "lastname",
+        "email",
+        "type",
+      ])
+      .executeTakeFirst();
 
-    const result = pgResult.rows.at(0);
     const conventionPeUserAdvisor =
       result && toConventionFranceTravailUserAdvisorDTO(result);
 
@@ -84,22 +82,29 @@ export class PgConventionFranceTravailAdvisorRepository
   ): Promise<void> {
     const { user, advisor } = peUserAndAdvisor;
 
-    await executeKyselyRawSqlQuery(
-      this.transaction,
-      upsertOnCompositePrimaryKeyConflict,
-      [
-        user.peExternalId,
-        CONVENTION_ID_DEFAULT_UUID,
-        advisor?.firstName ?? null,
-        advisor?.lastName ?? null,
-        advisor?.email ?? null,
-        advisor?.type ?? null,
-      ],
-    );
+    await this.transaction
+      .insertInto("partners_pe_connect")
+      .values({
+        user_pe_external_id: user.peExternalId,
+        convention_id: CONVENTION_ID_DEFAULT_UUID,
+        firstname: advisor?.firstName,
+        lastname: advisor?.lastName,
+        email: advisor?.email,
+        type: advisor?.type,
+      })
+      .onConflict((oc) =>
+        oc.columns(["user_pe_external_id", "convention_id"]).doUpdateSet({
+          firstname: (eb) => eb.ref("excluded.firstname"),
+          lastname: (eb) => eb.ref("excluded.lastname"),
+          email: (eb) => eb.ref("excluded.email"),
+          type: (eb) => eb.ref("excluded.type"),
+        }),
+      )
+      .execute();
   }
 }
 
-export type PgConventionFranceTravailUserAdvisorDto = {
+type PgConventionFranceTravailUserAdvisorDto = {
   user_pe_external_id: string;
   convention_id: string;
   firstname: string | null;
@@ -135,12 +140,3 @@ const toConventionFranceTravailUserAdvisorEntity = (
   ...dto,
   _entityName: "ConventionFranceTravailAdvisor",
 });
-
-// On primary key conflict we update the data columns (firstname, lastname, email, type) with the new values.
-// (the special EXCLUDED table is used to reference values originally proposed for insertion)
-// ref: https://www.postgresql.org/docs/current/sql-insert.html
-const upsertOnCompositePrimaryKeyConflict = `
-      INSERT INTO partners_pe_connect(user_pe_external_id, convention_id, firstname, lastname, email, type) 
-      VALUES($1, $2, $3, $4, $5, $6) 
-      ON CONFLICT (user_pe_external_id, convention_id) DO UPDATE 
-      SET (firstname, lastname, email, type) = (EXCLUDED.firstname, EXCLUDED.lastname, EXCLUDED.email, EXCLUDED.type)`;
