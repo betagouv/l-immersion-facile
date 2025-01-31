@@ -1,5 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { InputProps } from "@codegouvfr/react-dsfr/input";
+import { InputProps } from "@codegouvfr/react-dsfr/Input";
 import React from "react";
 import Select, { Props as SelectProps, GroupBase } from "react-select";
 import { useStyles } from "tss-react/dsfr";
