@@ -304,6 +304,7 @@ export const emailTemplatesByName =
         conventionId,
         immersionObjective,
         internshipKind,
+        immersionAppellationLabel,
       }) => {
         return {
           subject: `Pour information : évaluation ${
@@ -314,6 +315,7 @@ export const emailTemplatesByName =
             internshipKind === "immersion" ? "L'immersion" : "Le mini-stage"
           } prévue pour ${beneficiaryFirstName} ${beneficiaryLastName}, au sein de l'entreprise ${businessName} n'a pas eu lieu.
   
+          <strong>Métier observé : ${immersionAppellationLabel}</strong>
           <strong>Objectif ${
             internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
           } : ${immersionObjective}

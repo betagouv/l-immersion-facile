@@ -499,6 +499,7 @@ export const defaultEmailValueByEmailKind: {
     conventionId: "CONVENTION_ID",
     immersionObjective: "Confirmer un projet professionnel",
     internshipKind: "immersion",
+    immersionAppellationLabel: "APPELLATION_LABEL",
   },
   NEW_CONVENTION_AGENCY_NOTIFICATION: {
     internshipKind: "immersion",

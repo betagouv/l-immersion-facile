@@ -132,6 +132,7 @@ export type EmailParamsByEmailType = {
     beneficiaryLastName: string;
     businessName: string;
     internshipKind: InternshipKind;
+    immersionAppellationLabel: string;
   };
   BENEFICIARY_OR_ESTABLISHMENT_REPRESENTATIVE_ALREADY_SIGNED_NOTIFICATION: {
     agencyLogoUrl: AbsoluteUrl | undefined;

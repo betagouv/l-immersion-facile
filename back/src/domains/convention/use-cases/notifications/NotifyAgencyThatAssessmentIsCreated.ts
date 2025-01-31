@@ -42,6 +42,7 @@ export class NotifyAgencyThatAssessmentIsCreated extends TransactionalUseCase<Wi
         templatedContent: {
           kind: "ASSESSMENT_CREATED_WITH_STATUS_DID_NOT_SHOW_AGENCY_NOTIFICATION",
           recipients,
+          cc: [convention.signatories.beneficiary.email],
           params: {
             beneficiaryFirstName: convention.signatories.beneficiary.firstName,
             beneficiaryLastName: convention.signatories.beneficiary.lastName,
@@ -49,6 +50,8 @@ export class NotifyAgencyThatAssessmentIsCreated extends TransactionalUseCase<Wi
             conventionId: convention.id,
             immersionObjective: convention.immersionObjective,
             internshipKind: convention.internshipKind,
+            immersionAppellationLabel:
+              convention.immersionAppellation.appellationLabel,
           },
         },
         followedIds: {
