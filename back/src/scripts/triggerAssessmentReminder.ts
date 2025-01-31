@@ -69,7 +69,7 @@ handleCRONScript(
   ({ numberOfFirstReminders, numberOfSecondReminders }) =>
     [
       `Total of first reminders : ${numberOfFirstReminders}`,
-      `Total if second reminders: ${numberOfSecondReminders}`,
+      `Total of second reminders: ${numberOfSecondReminders}`,
     ].join("\n"),
   logger,
 );

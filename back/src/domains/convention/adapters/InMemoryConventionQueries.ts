@@ -18,7 +18,6 @@ import { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAgencyRe
 import { InMemoryUserRepository } from "../../core/authentication/inclusion-connect/adapters/InMemoryUserRepository";
 import { InMemoryNotificationRepository } from "../../core/notifications/adapters/InMemoryNotificationRepository";
 import {
-  AssessmentEmailKind,
   ConventionQueries,
   GetConventionsFilters,
   GetConventionsParams,
@@ -58,12 +57,9 @@ export class InMemoryConventionQueries implements ConventionQueries {
 
   public async getAllConventionsForThoseEndingThatDidntGoThrough(
     finishingRange: DateRange,
-    assessmentEmailKind: AssessmentEmailKind,
   ): Promise<ConventionReadDto[]> {
     const notifications = this.notificationRepository
-      ? await this.notificationRepository.getEmailsByFilters({
-          emailKind: assessmentEmailKind,
-        })
+      ? (await this.notificationRepository.getLastNotifications()).emails
       : [];
     const immersionIdsThatAlreadyGotAnEmail = notifications
       ? notifications.map(

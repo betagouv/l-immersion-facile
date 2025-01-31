@@ -1,12 +1,15 @@
 import { sql } from "kysely";
-import { map, uniq } from "ramda";
+import { difference, map, uniq } from "ramda";
 import {
+  ConventionId,
   EmailNotification,
+  EmailType,
   Notification,
   NotificationId,
   NotificationKind,
   NotificationsByKind,
   SmsNotification,
+  SmsTemplateByName,
   TemplatedEmail,
   TemplatedSms,
   exhaustiveCheck,
@@ -25,11 +28,52 @@ export class PgNotificationRepository implements NotificationRepository {
     private maxRetrievedNotifications = 30,
   ) {}
 
+  public async getConventionIdsWithoutNotifications({
+    emailType,
+    smsType,
+    conventionIds,
+  }: {
+    emailType?: EmailType;
+    smsType?: keyof SmsTemplateByName;
+    conventionIds: ConventionId[];
+  }): Promise<ConventionId[]> {
+    const smsResults =
+      smsType && conventionIds.length > 0
+        ? await this.transaction
+            .selectFrom("notifications_sms")
+            .select("notifications_sms.convention_id")
+            .where("notifications_sms.sms_kind", "=", smsType)
+            .where("notifications_sms.convention_id", "in", conventionIds)
+            .execute()
+        : [];
+    const conventionIdsWithSms = smsResults
+      .map((item) => item.convention_id)
+      .filter((id): id is ConventionId => id !== null);
+    const emailResults =
+      emailType && conventionIds.length > 0
+        ? await this.transaction
+            .selectFrom("notifications_email")
+            .select("notifications_email.convention_id")
+            .where("notifications_email.email_kind", "=", emailType)
+            .where("notifications_email.convention_id", "in", conventionIds)
+            .execute()
+        : [];
+    const conventionIdsWithEmail = emailResults
+      .map((item) => item.convention_id)
+      .filter((id): id is ConventionId => id !== null);
+
+    return difference(conventionIds, [
+      ...conventionIdsWithSms,
+      ...conventionIdsWithEmail,
+    ]);
+  }
+
   public async deleteAllEmailAttachements(): Promise<number> {
     const response = await this.transaction
       .updateTable("notifications_email_attachments")
       .set({
-        attachment: sql`jsonb_set(attachment::jsonb, '{content}', '"deleted-content"')`,
+        attachment: sql`jsonb_set
+            (attachment::jsonb, '{content}', '"deleted-content"')`,
       })
       .where(sql<boolean>`attachment::jsonb ->> 'content' != 'deleted-content'`)
       .executeTakeFirst();
@@ -70,7 +114,7 @@ export class PgNotificationRepository implements NotificationRepository {
       .then(map((row) => row.notif));
   }
 
-  public async getEmailsByFilters(): Promise<EmailNotification[]> {
+  async #getLastEmails(): Promise<EmailNotification[]> {
     const subQuery = pipeWithValue(
       this.transaction
         .selectFrom("notifications_email as e")
@@ -81,7 +125,13 @@ export class PgNotificationRepository implements NotificationRepository {
     );
 
     return getEmailsNotificationBuilder(this.transaction)
-      .where("e.created_at", ">", sql<Date>`NOW() - INTERVAL '2 day'`)
+      .where(
+        "e.created_at",
+        ">",
+        sql<Date>`NOW
+          ()
+          - INTERVAL '2 day'`,
+      )
       .where("e.id", "in", subQuery)
       .orderBy("e.created_at", "desc")
       .execute()
@@ -90,11 +140,17 @@ export class PgNotificationRepository implements NotificationRepository {
 
   public async getLastNotifications(): Promise<NotificationsByKind> {
     return getSmsNotificationBuilder(this.transaction)
-      .where("created_at", ">", sql<Date>`NOW() - INTERVAL '2 day'`)
+      .where(
+        "created_at",
+        ">",
+        sql<Date>`NOW
+          ()
+          - INTERVAL '2 day'`,
+      )
       .limit(this.maxRetrievedNotifications)
       .execute()
       .then(async (rows) => ({
-        emails: await this.getEmailsByFilters(),
+        emails: await this.#getLastEmails(),
         sms: rows.map((row) => row.notif),
       }));
   }
@@ -289,7 +345,8 @@ const getSmsNotificationBuilder = (transaction: KyselyDb) =>
       jsonBuildObject({
         id: ref("id"),
         kind: sql<"sms">`'sms'`,
-        createdAt: sql<string>`TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`,
+        createdAt: sql<string>`TO_CHAR
+            (created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`,
         followedIds: jsonBuildObject({
           conventionId: ref("convention_id"),
           establishmentId: ref("establishment_siret"),
@@ -323,7 +380,8 @@ const getEmailsNotificationBuilder = (transaction: KyselyDb) =>
         jsonBuildObject({
           id: ref("e.id"),
           kind: sql<"email">`'email'`,
-          createdAt: sql<string>`TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`,
+          createdAt: sql<string>`TO_CHAR
+              (created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`,
           followedIds: jsonBuildObject({
             conventionId: ref("convention_id"),
             establishmentId: ref("establishment_siret"),
@@ -342,8 +400,10 @@ const getEmailsNotificationBuilder = (transaction: KyselyDb) =>
                 }),
               )
               .end(),
-            recipients: sql`ARRAY_REMOVE(ARRAY_AGG(CASE WHEN r.recipient_type = 'to' THEN r.email ELSE NULL END), NULL)`,
-            cc: sql`ARRAY_REMOVE(ARRAY_AGG(CASE WHEN r.recipient_type = 'cc' THEN r.email ELSE NULL END), NULL)`,
+            recipients: sql`ARRAY_REMOVE
+            (ARRAY_AGG(CASE WHEN r.recipient_type = 'to' THEN r.email ELSE NULL END), NULL)`,
+            cc: sql`ARRAY_REMOVE
+            (ARRAY_AGG(CASE WHEN r.recipient_type = 'cc' THEN r.email ELSE NULL END), NULL)`,
             params: ref("params").$castTo<any>(),
             sender: eb
               .case()
@@ -360,7 +420,7 @@ const getEmailsNotificationBuilder = (transaction: KyselyDb) =>
                   WHEN ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.attachment), NULL) = ARRAY[]::jsonb[]
                     THEN NULL
                   ELSE ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.attachment), NULL)
-                END`,
+            END`,
           }).$castTo<TemplatedEmail>(),
         }),
       ).as("notif"),

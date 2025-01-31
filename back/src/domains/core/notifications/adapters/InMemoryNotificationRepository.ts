@@ -1,15 +1,19 @@
 import { parseISO } from "date-fns";
+import { difference } from "ramda";
 import {
   AgencyDto,
   AgencyWithUsersRights,
   ConventionDto,
+  ConventionId,
   EmailNotification,
+  EmailType,
   Notification,
   NotificationId,
   NotificationKind,
   ShortLinkId,
   Signatory,
   SmsNotification,
+  SmsTemplateByName,
   TemplatedEmail,
   concatValidatorNames,
   displayEmergencyContactInfos,
@@ -17,14 +21,41 @@ import {
 } from "shared";
 import { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { makeShortLinkUrl } from "../../short-link/ShortLink";
-import {
-  EmailNotificationFilters,
-  NotificationRepository,
-} from "../ports/NotificationRepository";
+import { NotificationRepository } from "../ports/NotificationRepository";
 
 export class InMemoryNotificationRepository implements NotificationRepository {
   // for tests purposes
   public notifications: Notification[] = [];
+
+  public async getConventionIdsWithoutNotifications({
+    emailType,
+    smsType,
+    conventionIds,
+  }: {
+    emailType?: EmailType;
+    smsType?: keyof SmsTemplateByName;
+    conventionIds: ConventionId[];
+  }): Promise<ConventionId[]> {
+    const conventionsWithNotifications = this.notifications
+      .filter(
+        (notification) =>
+          notification.followedIds.conventionId &&
+          conventionIds.includes(notification.followedIds.conventionId),
+      )
+      .filter((notification) => {
+        if (emailType && notification.kind === "email") {
+          return notification.templatedContent.kind === emailType;
+        }
+        if (smsType && notification.kind === "sms") {
+          return notification.templatedContent.kind === smsType;
+        }
+        return false;
+      })
+      .map((notification) => notification.followedIds.conventionId)
+      .filter((id): id is ConventionId => id !== null);
+
+    return difference(conventionIds, conventionsWithNotifications);
+  }
 
   async getSmsByIds(ids: NotificationId[]): Promise<SmsNotification[]> {
     return getNotificationsMatchingKindAndIds("sms", this.notifications, ids);
@@ -47,33 +78,17 @@ export class InMemoryNotificationRepository implements NotificationRepository {
     ])[0];
   }
 
-  public async getEmailsByFilters(filters: EmailNotificationFilters = {}) {
+  async #getLastEmails() {
     return this.notifications.filter(
       (notification): notification is EmailNotification => {
-        if (notification.kind !== "email") return false;
-
-        if (
-          filters.email &&
-          !notification.templatedContent.recipients.includes(filters.email)
-        )
-          return false;
-
-        if (
-          filters.emailKind &&
-          notification.templatedContent.kind !== filters.emailKind
-        )
-          return false;
-
-        return filters.since
-          ? new Date(notification.createdAt) > filters.since
-          : true;
+        return notification.kind === "email";
       },
     );
   }
 
   public async getLastNotifications() {
     return {
-      emails: await this.getEmailsByFilters(),
+      emails: await this.#getLastEmails(),
       sms: this.notifications.filter(
         (notification): notification is SmsNotification =>
           notification.kind === "sms",

@@ -1,3 +1,4 @@
+import { addDays } from "date-fns";
 import subDays from "date-fns/subDays";
 import {
   AgencyDtoBuilder,
@@ -171,5 +172,149 @@ describe("AssessmentReminder", () => {
     expectObjectInArrayToMatch(uow.outboxRepository.events, [
       { topic: "NotificationAdded" },
     ]);
+  });
+
+  it("do not send first reminder if it is already sent", async () => {
+    const now = timeGateway.now();
+    const conventionEndDate = subDays(now, 3);
+    const agency = new AgencyDtoBuilder().build();
+    const convention = new ConventionDtoBuilder()
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .withDateEnd(conventionEndDate.toISOString())
+      .withAgencyId(agency.id)
+      .build();
+    const validator = new InclusionConnectedUserBuilder()
+      .withId("10000000-0000-0000-0000-000000000003")
+      .withEmail("validator@agency1.fr")
+      .buildUser();
+    await uow.userRepository.save(validator);
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(agency, {
+        [validator.id]: {
+          isNotifiedByEmail: true,
+          roles: ["validator"],
+        },
+      }),
+    ];
+    await uow.conventionRepository.save(convention);
+    uow.notificationRepository.notifications = [
+      {
+        kind: "email",
+        id: "111111111111-1111-4000-1111-111111111111",
+        createdAt: addDays(conventionEndDate, 3).toISOString(),
+        followedIds: { conventionId: convention.id },
+        templatedContent: {
+          kind: "ASSESSMENT_AGENCY_FIRST_REMINDER",
+          recipients: [validator.email],
+          params: {
+            conventionId: convention.id,
+            internshipKind: convention.internshipKind,
+            businessName: convention.businessName,
+            establishmentContactEmail:
+              convention.signatories.establishmentRepresentative.email,
+            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
+            beneficiaryLastName: convention.signatories.beneficiary.lastName,
+            assessmentCreationLink: fakeGenerateMagicLinkUrlFn({
+              id: convention.id,
+              email: validator.email,
+              role: "validator",
+              targetRoute: frontRoutes.assessment,
+              now,
+            }),
+          },
+        },
+      },
+    ];
+
+    const { numberOfReminders } = await assessmentReminder.execute({
+      mode: "3daysAfterConventionEnd",
+    });
+
+    expect(numberOfReminders).toBe(0);
+  });
+
+  it("do not send second reminder if it is already sent", async () => {
+    const now = timeGateway.now();
+    const conventionEndDate = subDays(now, 10);
+    const agency = new AgencyDtoBuilder().build();
+    const convention = new ConventionDtoBuilder()
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .withDateEnd(conventionEndDate.toISOString())
+      .withAgencyId(agency.id)
+      .build();
+    const validator = new InclusionConnectedUserBuilder()
+      .withId("10000000-0000-0000-0000-000000000003")
+      .withEmail("validator@agency1.fr")
+      .buildUser();
+    await uow.userRepository.save(validator);
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(agency, {
+        [validator.id]: {
+          isNotifiedByEmail: true,
+          roles: ["validator"],
+        },
+      }),
+    ];
+    await uow.conventionRepository.save(convention);
+    uow.notificationRepository.notifications = [
+      {
+        kind: "email",
+        id: "111111111111-1111-4000-1111-111111111111",
+        createdAt: addDays(conventionEndDate, 3).toISOString(),
+        followedIds: { conventionId: convention.id },
+        templatedContent: {
+          kind: "ASSESSMENT_AGENCY_FIRST_REMINDER",
+          recipients: [validator.email],
+          params: {
+            conventionId: convention.id,
+            internshipKind: convention.internshipKind,
+            businessName: convention.businessName,
+            establishmentContactEmail:
+              convention.signatories.establishmentRepresentative.email,
+            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
+            beneficiaryLastName: convention.signatories.beneficiary.lastName,
+            assessmentCreationLink: fakeGenerateMagicLinkUrlFn({
+              id: convention.id,
+              email: validator.email,
+              role: "validator",
+              targetRoute: frontRoutes.assessment,
+              now,
+            }),
+          },
+        },
+      },
+      {
+        kind: "email",
+        id: "111111111111-1111-4000-1111-111111111112",
+        createdAt: addDays(conventionEndDate, 3).toISOString(),
+        followedIds: { conventionId: convention.id },
+        templatedContent: {
+          kind: "ASSESSMENT_AGENCY_SECOND_REMINDER",
+          recipients: [validator.email],
+          params: {
+            conventionId: convention.id,
+            internshipKind: convention.internshipKind,
+            businessName: convention.businessName,
+            establishmentContactEmail:
+              convention.signatories.establishmentRepresentative.email,
+            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
+            beneficiaryLastName: convention.signatories.beneficiary.lastName,
+            assessmentCreationLink: fakeGenerateMagicLinkUrlFn({
+              id: convention.id,
+              email: validator.email,
+              role: "validator",
+              targetRoute: frontRoutes.assessment,
+              now,
+            }),
+          },
+        },
+      },
+    ];
+
+    const { numberOfReminders } = await assessmentReminder.execute({
+      mode: "10daysAfterConventionEnd",
+    });
+
+    expect(numberOfReminders).toBe(0);
   });
 });

@@ -48,15 +48,19 @@ export const emailTemplatesByName =
         establishmentContactEmail,
         internshipKind,
       }) => ({
-        subject: `Immersion Facilitée - Bilan non complété pour l'immersion de ${beneficiaryFirstName}`,
+        subject: `Immersion Facilitée - Bilan non complété pour ${
+          internshipKind === "immersion" ? "l'immersion" : "le mini-stage"
+        } de ${beneficiaryFirstName}`,
         greetings: greetingsWithConventionId(conventionId),
         content: `
-        Nous constatons que le bilan de l’immersion de ${beneficiaryFirstName} ${beneficiaryLastName} n’a pas encore été complété par l’entreprise ${businessName}.
+        L'entreprise ${businessName} n'a pas encore complété le bilan ${
+          internshipKind ? "de l'immersion" : "du mini-stage"
+        } de ${beneficiaryFirstName} ${beneficiaryLastName}.
         
-        Afin de clôturer cette étape, vous pouvez :
+        Vous pouvez l'inciter à le faire en :
         
-        1. <a href= "mailto:${establishmentContactEmail}" target="_blank">Relancer directement l'entreprise</a> (${establishmentContactEmail}) pour qu’elle remplisse le bilan en ligne.
-        2. Les contacter par téléphone pour les accompagner dans la saisie du bilan.
+        1. <a href= "mailto:${establishmentContactEmail}" target="_blank">Relançant directement l'entreprise</a> (${establishmentContactEmail}) pour qu’elle remplisse le bilan en ligne.
+        2. Les contactant par téléphone pour les accompagner dans la saisie du bilan.
         `,
         buttons: [
           {
@@ -82,10 +86,16 @@ export const emailTemplatesByName =
         establishmentContactEmail,
         internshipKind,
       }) => ({
-        subject: `Immersion Facilitée - Urgent : Bilan toujours non complété pour l'immersion de ${beneficiaryFirstName}`,
+        subject: `Immersion Facilitée - Urgent : Bilan toujours non complété pour ${
+          internshipKind === "immersion" ? "l'immersion" : "le mini-stage"
+        } de ${beneficiaryFirstName}`,
         greetings: greetingsWithConventionId(conventionId),
         content: `
-        Malgré une première relance, le bilan de l’immersion de ${beneficiaryFirstName} ${beneficiaryLastName} chez ${businessName} reste incomplet.
+        Malgré une première relance, le bilan ${
+          internshipKind ? "de l'immersion" : "du mini-stage"
+        } de ${beneficiaryFirstName} ${beneficiaryLastName} chez ${businessName} reste incomplet.
+        
+        Pour régulariser rapidement cette situation, vous pouvez :
         
         1. <a href= "mailto:${establishmentContactEmail}" target="_blank">Relancer l'entreprise</a> (${establishmentContactEmail}) pour qu’elle remplisse le bilan.
         2. Les contacter par téléphone et les accompagner pour le compléter ensemble.
@@ -113,7 +123,9 @@ export const emailTemplatesByName =
         conventionId,
         internshipKind,
       }) => ({
-        subject: `Immersion Facilitée - Bilan disponible pour l'immersion de ${beneficiaryFirstName} ${beneficiaryLastName}`,
+        subject: `Immersion Facilitée - Bilan disponible pour ${
+          internshipKind === "immersion" ? "l'immersion" : "le mini-stage"
+        } de ${beneficiaryFirstName} ${beneficiaryLastName}`,
         greetings: greetingsWithConventionId(conventionId),
         content: `
       ${

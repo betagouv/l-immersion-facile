@@ -20,6 +20,7 @@ import {
   NotificationContentAndFollowedIds,
   SaveNotificationAndRelatedEvent,
 } from "../../core/notifications/helpers/Notification";
+import { NotificationRepository } from "../../core/notifications/ports/NotificationRepository";
 import { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 
@@ -55,6 +56,7 @@ export const makeAssessmentReminder = createTransactionalUseCase<
       now,
       assessmentRepository: uow.assessmentRepository,
       conventionRepository: uow.conventionRepository,
+      notificationRepository: uow.notificationRepository,
     });
 
     await executeInSequence(conventionIdsToRemind, async (conventionId) => {
@@ -95,11 +97,13 @@ const getConventionIdsToRemind = async ({
   now,
   conventionRepository,
   assessmentRepository,
+  notificationRepository,
 }: {
   mode: AssessmentReminderMode;
   now: Date;
   conventionRepository: ConventionRepository;
   assessmentRepository: AssessmentRepository;
+  notificationRepository: NotificationRepository;
 }): Promise<ConventionId[]> => {
   const daysAfterLastNotifications =
     mode === "3daysAfterConventionEnd" ? 3 : 10;
@@ -112,7 +116,20 @@ const getConventionIdsToRemind = async ({
     await assessmentRepository.getByConventionIds(potentialConventionsToRemind)
   ).map((assessment) => assessment.conventionId);
 
-  return difference(potentialConventionsToRemind, conventionsWithAssessments);
+  const ids = await notificationRepository.getConventionIdsWithoutNotifications(
+    {
+      emailType:
+        mode === "3daysAfterConventionEnd"
+          ? "ASSESSMENT_AGENCY_FIRST_REMINDER"
+          : "ASSESSMENT_AGENCY_SECOND_REMINDER",
+      conventionIds: difference(
+        potentialConventionsToRemind,
+        conventionsWithAssessments,
+      ),
+    },
+  );
+
+  return ids;
 };
 
 const createNotification = ({

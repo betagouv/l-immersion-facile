@@ -41,6 +41,10 @@
       "size": "M"
     },
     {
+      "command": "15 21 * * * pnpm back run trigger-assessment-reminders",
+      "size": "M"
+    },
+    {
       "command": "0 22 * * * pnpm back run trigger-mark-old-convention-as-deprecated",
       "size": "M"
     },
