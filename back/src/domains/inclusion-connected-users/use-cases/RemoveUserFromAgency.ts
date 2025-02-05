@@ -23,7 +23,9 @@ export const makeRemoveUserFromAgency = createTransactionalUseCase<
 >(
   { name: "RemoveUserFromAgency", inputSchema: withAgencyIdAndUserIdSchema },
   async ({ currentUser, uow, inputParams: { agencyId, userId }, deps }) => {
-    throwIfNotAgencyAdminOrBackofficeAdmin(agencyId, currentUser);
+    const isUserHimself = currentUser.id === userId;
+    if (!isUserHimself)
+      throwIfNotAgencyAdminOrBackofficeAdmin(agencyId, currentUser);
 
     const user = await uow.userRepository.getById(
       userId,
@@ -47,24 +49,23 @@ export const makeRemoveUserFromAgency = createTransactionalUseCase<
 
     validateAgencyRights(agency.id, usersRights);
 
-    await Promise.all([
-      uow.agencyRepository.update({
-        id: agency.id,
-        usersRights,
-      }),
-      uow.outboxRepository.save(
-        deps.createNewEvent({
-          topic: "IcUserAgencyRightChanged",
-          payload: {
-            userId,
-            agencyId,
-            triggeredBy: {
-              kind: "inclusion-connected",
-              userId: currentUser.id,
-            },
+    await uow.agencyRepository.update({
+      id: agency.id,
+      usersRights,
+    });
+
+    await uow.outboxRepository.save(
+      deps.createNewEvent({
+        topic: "IcUserAgencyRightChanged",
+        payload: {
+          userId,
+          agencyId,
+          triggeredBy: {
+            kind: "inclusion-connected",
+            userId: currentUser.id,
           },
-        }),
-      ),
-    ]);
+        },
+      }),
+    );
   },
 );

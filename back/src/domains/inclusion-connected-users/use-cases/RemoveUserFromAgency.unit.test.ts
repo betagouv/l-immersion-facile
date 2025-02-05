@@ -72,7 +72,7 @@ describe("RemoveUserFromAgency", () => {
   });
 
   describe("Wrong paths", () => {
-    it("throws forbidden when token payload is not backoffice token nor agencyAdmin", async () => {
+    it("throws forbidden when token payload is not backoffice token nor agencyAdmin nor himself", async () => {
       await expectPromiseToFailWithError(
         removeUserFromAgency.execute(
           {
@@ -241,6 +241,75 @@ describe("RemoveUserFromAgency", () => {
         errors.agency.notEnoughCounsellors(inputParams),
       );
     });
+  });
+
+  it("User to-review can remove himself", async () => {
+    const agency2 = new AgencyDtoBuilder().withId("agency-2-id").build();
+    const otherUserWithRightOnAgencies: User = {
+      ...icNotAdmin,
+      id: "other-user-id",
+    };
+
+    uow.userRepository.users = [notAdminUser, otherUserWithRightOnAgencies];
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(agency, {
+        [notAdminUser.id]: {
+          roles: ["to-review"],
+          isNotifiedByEmail: false,
+        },
+        [otherUserWithRightOnAgencies.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+      }),
+      toAgencyWithRights(agency2, {
+        [notAdminUser.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+        [otherUserWithRightOnAgencies.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+      }),
+    ];
+
+    const inputParams: WithAgencyIdAndUserId = {
+      agencyId: agency.id,
+      userId: notAdminUser.id,
+    };
+    await removeUserFromAgency.execute(inputParams, icNotAdmin);
+
+    expectToEqual(uow.agencyRepository.agencies, [
+      toAgencyWithRights(agency, {
+        [otherUserWithRightOnAgencies.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+      }),
+      toAgencyWithRights(agency2, {
+        [notAdminUser.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+        [otherUserWithRightOnAgencies.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+      }),
+    ]);
+    expectArraysToMatch(uow.outboxRepository.events, [
+      {
+        topic: "IcUserAgencyRightChanged",
+        payload: {
+          ...inputParams,
+          triggeredBy: {
+            kind: "inclusion-connected",
+            userId: icNotAdmin.id,
+          },
+        },
+      },
+    ]);
   });
 
   it.each([
