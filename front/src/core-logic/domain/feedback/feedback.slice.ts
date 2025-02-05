@@ -223,6 +223,19 @@ export const feedbackMapping: Record<
       title: "Erreur lors de la demande de rattachement à une agence",
       message: "Une erreur est survenue lors du rattachement de l'utilisateur",
     },
+    "delete.success": {
+      action: removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
+      title:
+        "La demande d’accès a bien été annulée. L’administrateur de l’organisme ne la verra plus.",
+      message: "L’administrateur de l’organisme ne la verra plus.",
+    },
+    "delete.error": {
+      action: removeUserFromAgencySlice.actions.removeUserFromAgencyFailed,
+      title:
+        "Problème lors de l'annulation de la demande d’accès de l'utilisateur à cette agence",
+      message:
+        "Une erreur est survenue lors de l'annulation de la demande d'accès de l'utilisateur.",
+    },
   },
   "agency-user-for-dashboard": {
     "fetch.error": {
@@ -303,6 +316,19 @@ export const feedbackMapping: Record<
       title: "Problème lors de la mise à jour de l'utilisateur",
       message:
         "Une erreur est survenue lors de la mise à jour de l'utilisateur",
+    },
+    "delete.success": {
+      action: removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
+      title:
+        "La demande d’accès a bien été annulée. L’administrateur de l’organisme ne la verra plus.",
+      message: "L’administrateur de l’organisme ne la verra plus.",
+    },
+    "delete.error": {
+      action: removeUserFromAgencySlice.actions.removeUserFromAgencyFailed,
+      title:
+        "Problème lors de l'annulation de la demande d’accès de l'utilisateur à cette agence",
+      message:
+        "Une erreur est survenue lors de l'annulation de la demande d'accès de l'utilisateur.",
     },
   },
   "search-result": {

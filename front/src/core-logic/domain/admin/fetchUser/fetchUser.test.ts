@@ -9,6 +9,8 @@ import {
 import { adminPreloadedState } from "src/core-logic/domain/admin/adminPreloadedState";
 import { adminFetchUserSelectors } from "src/core-logic/domain/admin/fetchUser/fetchUser.selectors";
 import { fetchUserSlice } from "src/core-logic/domain/admin/fetchUser/fetchUser.slice";
+import { removeUserFromAgencySelectors } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.selectors";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySelectors } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.selectors";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import {
@@ -140,6 +142,104 @@ describe("Admin Users slice", () => {
 
       expectToEqual(
         updateUserOnAgencySelectors.isLoading(store.getState()),
+        false,
+      );
+      expectToEqual(
+        adminFetchUserSelectors.fetchedUser(store.getState()),
+        user,
+      );
+    });
+  });
+
+  describe("when user has successfully requested removal from agency of another user", () => {
+    it("if it is himself, remove the user rights successfully", () => {
+      const agency = new AgencyDtoBuilder().build();
+      const agencyRight: AgencyRight = {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(
+          new AgencyDtoBuilder().build(),
+          [],
+        ),
+        roles: ["to-review"],
+        isNotifiedByEmail: false,
+      };
+      const user: InclusionConnectedUser = new InclusionConnectedUserBuilder()
+        .withId("user-id")
+        .withIsAdmin(false)
+        .withAgencyRights([agencyRight])
+        .build();
+
+      ({ store, dependencies } = createTestStore({
+        admin: adminPreloadedState({
+          fetchUser: {
+            user,
+            isFetching: false,
+          },
+        }),
+      }));
+
+      store.dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          userId: user.id,
+          agencyId: agency.id,
+          feedbackTopic: "user",
+        }),
+      );
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
+        true,
+      );
+      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
+
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
+        false,
+      );
+      expectToEqual(adminFetchUserSelectors.fetchedUser(store.getState()), {
+        ...user,
+        agencyRights: [],
+      });
+    });
+
+    it("if it is not user in state, do nothing", () => {
+      const agency = new AgencyDtoBuilder().build();
+      const agencyRight: AgencyRight = {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(
+          new AgencyDtoBuilder().build(),
+          [],
+        ),
+        roles: ["to-review"],
+        isNotifiedByEmail: false,
+      };
+      const user: InclusionConnectedUser = new InclusionConnectedUserBuilder()
+        .withId("user-id")
+        .withIsAdmin(false)
+        .withAgencyRights([agencyRight])
+        .build();
+
+      ({ store, dependencies } = createTestStore({
+        admin: adminPreloadedState({
+          fetchUser: {
+            user,
+            isFetching: false,
+          },
+        }),
+      }));
+
+      store.dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          userId: "another-user-id",
+          agencyId: agency.id,
+          feedbackTopic: "user",
+        }),
+      );
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
+        true,
+      );
+      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
+
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
         false,
       );
       expectToEqual(
