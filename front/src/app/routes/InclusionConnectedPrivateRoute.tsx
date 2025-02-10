@@ -63,6 +63,7 @@ export type FrontAgencyDashboardRoute =
 type InclusionConnectPrivateRoute =
   | FrontAdminRoute
   | FrontAgencyDashboardRoute
+  | Route<typeof routes.formEstablishment>
   | Route<typeof routes.establishmentDashboard>
   | Route<typeof routes.myProfile>;
 
@@ -71,36 +72,6 @@ type InclusionConnectedPrivateRouteProps = {
   children: React.ReactElement;
   inclusionConnectConnexionPageHeader: React.ReactElement;
   allowAdminOnly?: boolean;
-};
-
-const providers: Record<
-  OAuthGatewayProvider,
-  {
-    name: string;
-    baseline: string;
-    buttonProvider: OAuthButtonProps["provider"];
-  }
-> = {
-  inclusionConnect: {
-    name: "Inclusion Connect",
-    buttonProvider: "inclusion-connect",
-    baseline:
-      "Inclusion Connect est la solution proposée par l'État pour sécuriser et simplifier la connexion aux services en ligne de l'inclusion.",
-  },
-  proConnect: {
-    name: "ProConnect",
-    buttonProvider: "pro-connect",
-    baseline:
-      "ProConnect est la solution proposée par l'État pour sécuriser et simplifier la connexion aux services en ligne pour les professionnels.",
-  },
-};
-
-const getPage = (
-  route: InclusionConnectPrivateRoute,
-): AllowedStartInclusionConnectLoginPage => {
-  if (route.name === "establishmentDashboard") return "establishmentDashboard";
-  if (route.name === "agencyDashboardMain") return "agencyDashboard";
-  return "admin";
 };
 
 export const InclusionConnectedPrivateRoute = ({
@@ -247,4 +218,34 @@ export const InclusionConnectedPrivateRoute = ({
       <MainWrapper layout="default">{children}</MainWrapper>
     </HeaderFooterLayout>
   );
+};
+
+const providers: Record<
+  OAuthGatewayProvider,
+  {
+    name: string;
+    baseline: string;
+    buttonProvider: OAuthButtonProps["provider"];
+  }
+> = {
+  inclusionConnect: {
+    name: "Inclusion Connect",
+    buttonProvider: "inclusion-connect",
+    baseline:
+      "Inclusion Connect est la solution proposée par l'État pour sécuriser et simplifier la connexion aux services en ligne de l'inclusion.",
+  },
+  proConnect: {
+    name: "ProConnect",
+    buttonProvider: "pro-connect",
+    baseline:
+      "ProConnect est la solution proposée par l'État pour sécuriser et simplifier la connexion aux services en ligne pour les professionnels.",
+  },
+};
+
+const getPage = (
+  route: InclusionConnectPrivateRoute,
+): AllowedStartInclusionConnectLoginPage => {
+  if (route.name === "establishmentDashboard") return "establishmentDashboard";
+  if (route.name === "agencyDashboardMain") return "agencyDashboard";
+  return "admin";
 };
