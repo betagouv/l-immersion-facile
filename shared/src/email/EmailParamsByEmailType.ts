@@ -134,6 +134,13 @@ export type EmailParamsByEmailType = {
     internshipKind: InternshipKind;
     immersionAppellationLabel: string;
   };
+  ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION: {
+    internshipKind: InternshipKind;
+    conventionId: ConventionId;
+    beneficiaryFirstName: string;
+    beneficiaryLastName: string;
+    magicLink: string;
+  };
   BENEFICIARY_OR_ESTABLISHMENT_REPRESENTATIVE_ALREADY_SIGNED_NOTIFICATION: {
     agencyLogoUrl: AbsoluteUrl | undefined;
     beneficiaryFirstName: string;
