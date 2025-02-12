@@ -42,6 +42,7 @@ export const makeCreateAssessment = createTransactionalUseCase<
     );
 
     throwForbiddenIfNotAllowedForAssessments(
+      "CreateAssessment",
       convention,
       await agencyWithRightToAgencyDto(uow, agency),
       conventionJwtPayload,

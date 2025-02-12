@@ -160,7 +160,15 @@ describe("CreateAssessment", () => {
       "throws forbidden if the jwt role is '%s'",
       async (role) => {
         await expectPromiseToFailWithError(
-          createAssessment.execute(assessment, { ...tutorPayload, role }),
+          createAssessment.execute(assessment, {
+            applicationId: validatedConvention.id,
+            emailHash: makeHashByRolesForTest(
+              validatedConvention,
+              counsellor,
+              validator,
+            )[role],
+            role,
+          }),
           errors.assessment.forbidden(),
         );
       },
