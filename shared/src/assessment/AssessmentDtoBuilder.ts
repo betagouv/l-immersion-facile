@@ -1,4 +1,5 @@
 import { Builder } from "../Builder";
+import { ConventionId } from "../convention/convention.dto";
 import { AssessmentDto } from "./assessment.dto";
 
 const minimalAssessment: AssessmentDto = {
@@ -22,7 +23,7 @@ const fullAssessment: AssessmentDto = {
 };
 
 export class AssessmentDtoBuilder implements Builder<AssessmentDto> {
-  constructor(private dto: AssessmentDto = minimalAssessment) {}
+  constructor(private dto: AssessmentDto = { ...minimalAssessment }) {}
   public build() {
     return this.dto;
   }
@@ -32,6 +33,10 @@ export class AssessmentDtoBuilder implements Builder<AssessmentDto> {
   }
   public withFullInformations() {
     this.dto = fullAssessment;
+    return this;
+  }
+  public withConventionId(conventionId: ConventionId) {
+    this.dto.conventionId = conventionId;
     return this;
   }
 }

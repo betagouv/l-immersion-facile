@@ -146,7 +146,10 @@ const getUseCasesByTopics = (
   AgencyRegisteredToInclusionConnectedUser: [],
 
   // Assessment related:
-  AssessmentCreated: [useCases.notifyAgencyThatAssessmentIsCreated],
+  AssessmentCreated: [
+    useCases.notifyAgencyThatAssessmentIsCreated,
+    useCases.notifyEstablishmentThatAssessmentWasCreated,
+  ],
   EmailWithLinkToCreateAssessmentSent: [],
   BeneficiaryAssessmentEmailSent: [],
 
