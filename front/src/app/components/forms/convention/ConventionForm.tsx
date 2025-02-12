@@ -399,7 +399,7 @@ export const ConventionForm = ({
                 <div className={fr.cx("fr-accordions-group")}>
                   <Accordion
                     label={
-                      <RenderSectionTitle
+                      <SectionTitle
                         title={t.agencySection.title}
                         step={1}
                         currentStep={currentStep}
@@ -433,7 +433,7 @@ export const ConventionForm = ({
 
                   <Accordion
                     label={
-                      <RenderSectionTitle
+                      <SectionTitle
                         title={t.beneficiarySection.title}
                         step={2}
                         currentStep={currentStep}
@@ -451,7 +451,7 @@ export const ConventionForm = ({
                   </Accordion>
                   <Accordion
                     label={
-                      <RenderSectionTitle
+                      <SectionTitle
                         title={t.establishmentSection.title}
                         step={3}
                         currentStep={currentStep}
@@ -467,7 +467,7 @@ export const ConventionForm = ({
                   </Accordion>
                   <Accordion
                     label={
-                      <RenderSectionTitle
+                      <SectionTitle
                         title={t.immersionHourLocationSection.title}
                         step={4}
                         currentStep={currentStep}
@@ -495,7 +495,7 @@ export const ConventionForm = ({
                   </Accordion>
                   <Accordion
                     label={
-                      <RenderSectionTitle
+                      <SectionTitle
                         title={t.immersionDetailsSection.title}
                         step={5}
                         currentStep={currentStep}
@@ -644,7 +644,14 @@ const useWaitForReduxFormUiReadyBeforeInitialisation = (
 
   useEffect(() => {
     dispatch(
-      conventionSlice.actions.isMinorChanged(isBeneficiaryMinor(initialValues)),
+      conventionSlice.actions.isMinorChanged(
+        isBeneficiaryMinor({
+          beneficiaryRepresentative:
+            initialValues.signatories.beneficiaryRepresentative,
+          beneficiaryBirthdate: initialValues.signatories.beneficiary.birthdate,
+          conventionDateStart: initialValues.dateStart,
+        }),
+      ),
     );
     dispatch(
       conventionSlice.actions.isCurrentEmployerChanged(
@@ -662,7 +669,7 @@ const useWaitForReduxFormUiReadyBeforeInitialisation = (
   return reduxFormUiReady;
 };
 
-const RenderSectionTitle = ({
+const SectionTitle = ({
   title,
   step,
   stepsStatus,
