@@ -1,7 +1,6 @@
 import { addDays, subDays } from "date-fns";
 import {
   EstablishmentRoutes,
-  FormEstablishmentDtoBuilder,
   InclusionConnectJwtPayload,
   InclusionConnectedUserBuilder,
   UserBuilder,
@@ -49,9 +48,6 @@ describe("Delete form establishment", () => {
       },
     ])
     .build();
-  const formEstablishment = FormEstablishmentDtoBuilder.valid()
-    .withSiret(establishmentAggregate.establishment.siret)
-    .build();
 
   let httpClient: HttpClient<EstablishmentRoutes>;
   let uow: InMemoryUnitOfWork;
@@ -78,7 +74,6 @@ describe("Delete form establishment", () => {
     uow.establishmentAggregateRepository.establishmentAggregates = [
       establishmentAggregate,
     ];
-    uow.formEstablishmentRepository.setFormEstablishments([formEstablishment]);
 
     const response = await httpClient.deleteEstablishment({
       urlParams: {
@@ -97,7 +92,6 @@ describe("Delete form establishment", () => {
       uow.establishmentAggregateRepository.establishmentAggregates,
       [],
     );
-    expectToEqual(await uow.formEstablishmentRepository.getAll(), []);
   });
 
   it(`${displayRouteName(

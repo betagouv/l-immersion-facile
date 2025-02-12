@@ -1,5 +1,4 @@
 import {
-  FormEstablishmentDtoBuilder,
   GroupOptions,
   InclusionConnectedUserBuilder,
   UserBuilder,
@@ -144,11 +143,7 @@ describe("Delete Establishment", () => {
       uow.establishmentAggregateRepository.establishmentAggregates = [
         establishmentAggregate,
       ];
-      uow.formEstablishmentRepository.setFormEstablishments([
-        FormEstablishmentDtoBuilder.valid()
-          .withSiret(establishmentAggregate.establishment.siret)
-          .build(),
-      ]);
+
       uow.groupRepository.groupEntities = [
         {
           name: "group",
@@ -169,7 +164,7 @@ describe("Delete Establishment", () => {
         uow.establishmentAggregateRepository.establishmentAggregates,
         [],
       );
-      expectToEqual(await uow.formEstablishmentRepository.getAll(), []);
+
       expectToEqual(uow.groupRepository.groupEntities, [
         {
           name: "group",

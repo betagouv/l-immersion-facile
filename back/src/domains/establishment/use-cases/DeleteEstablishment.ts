@@ -60,7 +60,6 @@ export class DeleteEstablishment extends TransactionalUseCase<
 
     await Promise.all([
       uow.establishmentAggregateRepository.delete(siret),
-      uow.formEstablishmentRepository.delete(siret),
       ...groupsUpdatedWithoutSiret.map((group) =>
         uow.groupRepository.save(group),
       ),
