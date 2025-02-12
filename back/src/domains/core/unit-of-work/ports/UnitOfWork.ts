@@ -12,7 +12,6 @@ import { DiscussionRepository } from "../../../establishment/ports/DiscussionRep
 import { EstablishmentAggregateRepository } from "../../../establishment/ports/EstablishmentAggregateRepository";
 import { EstablishmentLeadQueries } from "../../../establishment/ports/EstablishmentLeadQueries";
 import { EstablishmentLeadRepository } from "../../../establishment/ports/EstablishmentLeadRepository";
-import { FormEstablishmentRepository } from "../../../establishment/ports/FormEstablishmentRepository";
 import { GroupRepository } from "../../../establishment/ports/GroupRepository";
 import { SearchMadeRepository } from "../../../establishment/ports/SearchMadeRepository";
 import { EstablishmentMarketingRepository } from "../../../marketing/ports/EstablishmentMarketingRepository";
@@ -50,7 +49,6 @@ export type UnitOfWork = {
   establishmentLeadRepository: EstablishmentLeadRepository;
   establishmentMarketingRepository: EstablishmentMarketingRepository;
   featureFlagRepository: FeatureFlagRepository;
-  formEstablishmentRepository: FormEstablishmentRepository;
   groupRepository: GroupRepository;
   nafRepository: NafRepository;
   notificationRepository: NotificationRepository;
