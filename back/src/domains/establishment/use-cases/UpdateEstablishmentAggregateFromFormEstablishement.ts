@@ -1,4 +1,6 @@
 import {
+  EstablishmentDomainPayload,
+  InclusionConnectDomainJwtPayload,
   WithFormEstablishmentDto,
   errors,
   withFormEstablishmentSchema,
@@ -20,8 +22,9 @@ import { EstablishmentUserRight } from "../entities/EstablishmentAggregate";
 import { makeEstablishmentAggregate } from "../helpers/makeEstablishmentAggregate";
 
 export class UpdateEstablishmentAggregateFromForm extends TransactionalUseCase<
-  WithFormEstablishmentDto & WithTriggeredBy,
-  void
+  WithFormEstablishmentDto,
+  void,
+  InclusionConnectDomainJwtPayload | EstablishmentDomainPayload
 > {
   protected inputSchema = withFormEstablishmentSchema.and(
     withTriggeredBySchema,
@@ -56,7 +59,9 @@ export class UpdateEstablishmentAggregateFromForm extends TransactionalUseCase<
       triggeredBy,
     }: WithFormEstablishmentDto & WithTriggeredBy,
     uow: UnitOfWork,
+    jwtPayload: InclusionConnectDomainJwtPayload | EstablishmentDomainPayload,
   ): Promise<void> {
+    if (!jwtPayload) throw errors.user.noJwtProvided();
     const initialEstablishmentAggregate =
       await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
         formEstablishment.siret,

@@ -27,6 +27,7 @@ import {
   TEST_OPEN_ESTABLISHMENT_2,
 } from "../../../../domains/core/sirene/adapters/InMemorySiretGateway";
 import { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
+import { EstablishmentAggregateBuilder } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { InMemoryGateways, buildTestApp } from "../../../../utils/buildTestApp";
 
@@ -55,10 +56,6 @@ describe("Edit form establishments", () => {
       new AppConfigBuilder().withTestPresetPreviousKeys().build(),
     ));
     httpClient = createSupertestSharedClient(establishmentRoutes, request);
-
-    inMemoryUow.formEstablishmentRepository.setFormEstablishments([
-      formEstablishment,
-    ]);
   });
 
   it("200 - Supports posting already existing form establisment when authenticated with establishment JWT", async () => {
@@ -80,9 +77,14 @@ describe("Edit form establishments", () => {
       status: 200,
     });
     expect(inMemoryUow.outboxRepository.events).toHaveLength(1);
-    expectToEqual(await inMemoryUow.formEstablishmentRepository.getAll(), [
-      formEstablishment,
-    ]);
+    expectToEqual(
+      inMemoryUow.establishmentAggregateRepository.establishmentAggregates,
+      [
+        new EstablishmentAggregateBuilder()
+          .fromFormEstablishment(formEstablishment, gateways.timeGateway.now())
+          .build(),
+      ],
+    );
   });
 
   it("200 - Updates establishment with new data", async () => {
@@ -120,9 +122,17 @@ describe("Edit form establishments", () => {
       status: 200,
     });
     expect(inMemoryUow.outboxRepository.events).toHaveLength(1);
-    expectToEqual(await inMemoryUow.formEstablishmentRepository.getAll(), [
-      updatedFormEstablishment,
-    ]);
+    expectToEqual(
+      inMemoryUow.establishmentAggregateRepository.establishmentAggregates,
+      [
+        new EstablishmentAggregateBuilder()
+          .fromFormEstablishment(
+            updatedFormEstablishment,
+            gateways.timeGateway.now(),
+          )
+          .build(),
+      ],
+    );
   });
 
   it("200 - Supports posting already existing form establisment when authenticated with backoffice JWT", async () => {
@@ -152,9 +162,14 @@ describe("Edit form establishments", () => {
       status: 200,
     });
     expect(inMemoryUow.outboxRepository.events).toHaveLength(1);
-    expectToEqual(await inMemoryUow.formEstablishmentRepository.getAll(), [
-      formEstablishment,
-    ]);
+    expectToEqual(
+      inMemoryUow.establishmentAggregateRepository.establishmentAggregates,
+      [
+        new EstablishmentAggregateBuilder()
+          .fromFormEstablishment(formEstablishment, gateways.timeGateway.now())
+          .build(),
+      ],
+    );
   });
 
   it("400 - not authenticated", async () => {

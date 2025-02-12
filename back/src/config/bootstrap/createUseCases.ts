@@ -101,7 +101,6 @@ import { makeAssessmentReminder } from "../../domains/establishment/use-cases/As
 import { ContactEstablishment } from "../../domains/establishment/use-cases/ContactEstablishment";
 import { makeContactRequestReminder } from "../../domains/establishment/use-cases/ContactRequestReminder";
 import { DeleteEstablishment } from "../../domains/establishment/use-cases/DeleteEstablishment";
-import { EditFormEstablishment } from "../../domains/establishment/use-cases/EditFormEstablishment";
 import { makeGetExternalSearchResult } from "../../domains/establishment/use-cases/GetExternalSearchResult";
 import { GetOffersByGroupSlug } from "../../domains/establishment/use-cases/GetGroupBySlug";
 import { GetSearchResultBySearchQuery } from "../../domains/establishment/use-cases/GetSearchResultBySearchQuery";
@@ -335,11 +334,6 @@ export const createUseCases = (
       ),
 
       addFormEstablishment,
-
-      editFormEstablishment: new EditFormEstablishment(
-        uowPerformer,
-        createNewEvent,
-      ),
       retrieveFormEstablishmentFromAggregates:
         new RetrieveFormEstablishmentFromAggregates(uowPerformer),
       updateEstablishmentAggregateFromForm:
