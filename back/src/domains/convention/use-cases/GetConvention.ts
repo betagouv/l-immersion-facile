@@ -17,7 +17,7 @@ import {
 } from "../../../utils/emailHash";
 import { TransactionalUseCase } from "../../core/UseCase";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
-import { getIcUserByUserId } from "../../inclusion-connected-users/helpers/inclusionConnectedUser.helper";
+import { getUserWithRights } from "../../inclusion-connected-users/helpers/userRights.helper";
 
 export class GetConvention extends TransactionalUseCase<
   WithConventionId,
@@ -91,7 +91,7 @@ export class GetConvention extends TransactionalUseCase<
     convention: ConventionReadDto;
     uow: UnitOfWork;
   }): Promise<ConventionReadDto> {
-    const user = await getIcUserByUserId(uow, userId);
+    const user = await getUserWithRights(uow, userId);
 
     const roles = getIcUserRoleForAccessingConvention(convention, user);
     if (roles.length) return convention;

@@ -6,7 +6,8 @@ import { Email } from "../email/email.dto";
 import { FtConnectIdentity } from "../federatedIdentities/federatedIdentity.dto";
 import {
   AgencyRole,
-  InclusionConnectedUser,
+  UserWithAdminRights,
+  UserWithAgencyRights,
 } from "../inclusionConnectedAllowed/inclusionConnectedAllowed.dto";
 import {
   ModifierRole,
@@ -413,7 +414,7 @@ export const reminderKinds = [
 export type ReminderKind = (typeof reminderKinds)[number];
 
 export const userHasEnoughRightsOnConvention = (
-  user: InclusionConnectedUser,
+  user: UserWithAdminRights & UserWithAgencyRights,
   convention: ConventionDto,
   allowedRoles: AgencyRole[],
 ): boolean =>

@@ -3,7 +3,7 @@ import {
   AgencyGroup,
   AgencyRight,
   AgencyWithUsersRights,
-  InclusionConnectedUser,
+  UserWithRights,
   activeAgencyStatuses,
   agencyRoleIsNotToReview,
   toAgencyDtoForAgencyUsersAndAdmins,
@@ -16,7 +16,7 @@ import {
 import { TransactionalUseCase } from "../../core/UseCase";
 import { UserAuthenticatedPayload } from "../../core/events/events";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
-import { getIcUserByUserId } from "../helpers/inclusionConnectedUser.helper";
+import { getUserWithRights } from "../helpers/userRights.helper";
 
 const userAuthenticatedSchema: z.Schema<UserAuthenticatedPayload> = z.object({
   userId: z.string(),
@@ -32,7 +32,7 @@ export class LinkFranceTravailUsersToTheirAgencies extends TransactionalUseCase<
     uow: UnitOfWork,
   ): Promise<void> {
     if (!codeSafir) return;
-    const user = await getIcUserByUserId(uow, userId);
+    const user = await getUserWithRights(uow, userId);
     if (isIcUserAlreadyHasValidRight(user, codeSafir)) return;
 
     const agencyWithSafir = await uow.agencyRepository.getBySafir(codeSafir);
@@ -49,7 +49,7 @@ export class LinkFranceTravailUsersToTheirAgencies extends TransactionalUseCase<
 }
 
 const isIcUserAlreadyHasValidRight = (
-  icUser: InclusionConnectedUser,
+  icUser: UserWithRights,
   codeSafir: string,
 ): boolean =>
   icUser.agencyRights.some(
@@ -73,7 +73,7 @@ const updateActiveAgencyWithSafir = (
 const updateAgenciesOfGroup = async (
   uow: UnitOfWork,
   agencyGroupWithSafir: AgencyGroup,
-  user: InclusionConnectedUser,
+  user: UserWithRights,
 ): Promise<void> => {
   const agenciesRelatedToGroup = await uow.agencyRepository.getByIds(
     agencyGroupWithSafir.agencyIds,

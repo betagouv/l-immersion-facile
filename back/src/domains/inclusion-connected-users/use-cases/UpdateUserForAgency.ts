@@ -10,7 +10,10 @@ import {
 } from "shared";
 import { TransactionalUseCase } from "../../core/UseCase";
 import { makeProvider } from "../../core/authentication/inclusion-connect/port/OAuthGateway";
-import { UserRepository } from "../../core/authentication/inclusion-connect/port/UserRepository";
+import {
+  UserOnRepository,
+  UserRepository,
+} from "../../core/authentication/inclusion-connect/port/UserRepository";
 import { CreateNewEvent } from "../../core/events/ports/EventBus";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
@@ -20,7 +23,6 @@ import {
   rejectIfEditionOfValidatorsOfAgencyWithRefersTo,
   validateAgencyRights,
 } from "../helpers/agencyRights.helper";
-import { getIcUserByUserId } from "../helpers/inclusionConnectedUser.helper";
 
 export class UpdateUserForAgency extends TransactionalUseCase<
   UserParamsForAgency,
@@ -50,7 +52,10 @@ export class UpdateUserForAgency extends TransactionalUseCase<
       params,
     );
 
-    const userToUpdate = await getIcUserByUserId(uow, params.userId);
+    const userToUpdate = await uow.userRepository.getById(
+      params.userId,
+      await makeProvider(uow),
+    );
     if (!userToUpdate) throw errors.user.notFound({ userId: params.userId });
 
     const agency = await uow.agencyRepository.getById(params.agencyId);
@@ -116,7 +121,7 @@ export class UpdateUserForAgency extends TransactionalUseCase<
 }
 
 const rejectEmailModificationIfInclusionConnectedUser = (
-  user: InclusionConnectedUser,
+  user: UserOnRepository,
   newEmail: Email,
 ): void => {
   if (!newEmail || !user.externalId) return;
@@ -126,7 +131,7 @@ const rejectEmailModificationIfInclusionConnectedUser = (
 };
 
 const updateIfUserEmailChanged = async (
-  user: InclusionConnectedUser,
+  user: UserOnRepository,
   newEmail: Email,
   userRepository: UserRepository,
 ): Promise<void> => {

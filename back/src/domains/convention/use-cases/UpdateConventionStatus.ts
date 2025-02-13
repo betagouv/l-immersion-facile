@@ -5,11 +5,11 @@ import {
   ConventionRelatedJwtPayload,
   ConventionStatus,
   DateString,
-  InclusionConnectedUser,
   Role,
   Signatories,
   UpdateConventionStatusRequestDto,
   UserId,
+  UserWithRights,
   WithConventionIdLegacy,
   backOfficeEmail,
   errors,
@@ -30,7 +30,7 @@ import { CreateNewEvent } from "../../core/events/ports/EventBus";
 import { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
-import { getIcUserByUserId } from "../../inclusion-connected-users/helpers/inclusionConnectedUser.helper";
+import { getUserWithRights } from "../../inclusion-connected-users/helpers/userRights.helper";
 import { throwIfTransitionNotAllowed } from "../entities/Convention";
 
 const domainTopicByTargetStatusMap: Record<
@@ -108,14 +108,12 @@ export class UpdateConventionStatus extends TransactionalUseCase<
         agencyId: conventionRead.agencyId,
       });
 
-    const { user, roleInPayload } = await this.#getRoleInPayloadOrUser(
-      uow,
-      payload,
-    );
+    const roleOrUser = await this.#getRoleInPayloadOrUser(uow, payload);
 
-    const roles = roleInPayload
-      ? [roleInPayload]
-      : await this.#rolesFromUser(user, conventionRead);
+    const roles =
+      "roleInPayload" in roleOrUser
+        ? [roleOrUser.roleInPayload]
+        : await this.#rolesFromUser(roleOrUser.userWithRights, conventionRead);
 
     throwIfTransitionNotAllowed({
       roles,
@@ -192,15 +190,16 @@ export class UpdateConventionStatus extends TransactionalUseCase<
 
     const domainTopic = domainTopicByTargetStatusMap[params.status];
     if (domainTopic) {
-      const triggeredBy: TriggeredBy = user
-        ? {
-            kind: "inclusion-connected",
-            userId: user.id,
-          }
-        : {
-            kind: "convention-magic-link",
-            role: roleInPayload,
-          };
+      const triggeredBy: TriggeredBy =
+        "roleInPayload" in roleOrUser
+          ? {
+              kind: "convention-magic-link",
+              role: roleOrUser.roleInPayload,
+            }
+          : {
+              kind: "inclusion-connected",
+              userId: roleOrUser.userWithRights.id,
+            };
 
       const event =
         params.status === "DRAFT"
@@ -241,27 +240,22 @@ export class UpdateConventionStatus extends TransactionalUseCase<
   async #getRoleInPayloadOrUser(
     uow: UnitOfWork,
     payload: UpdateConventionStatusSupportedJwtPayload,
-  ): Promise<
-    | { user: InclusionConnectedUser; roleInPayload: undefined }
-    | { user: undefined; roleInPayload: Role }
-  > {
-    if ("role" in payload)
-      return { roleInPayload: payload.role, user: undefined };
+  ): Promise<{ userWithRights: UserWithRights } | { roleInPayload: Role }> {
+    if ("role" in payload) return { roleInPayload: payload.role };
 
-    const user = await getIcUserByUserId(uow, payload.userId);
-    if (!user)
+    const userWithRights = await getUserWithRights(uow, payload.userId);
+    if (!userWithRights)
       throw errors.user.notFound({
         userId: payload.userId,
       });
 
     return {
-      user,
-      roleInPayload: undefined,
+      userWithRights: userWithRights,
     };
   }
 
   async #rolesFromUser(
-    user: InclusionConnectedUser,
+    user: UserWithRights,
     convention: ConventionDto,
   ): Promise<Role[]> {
     const roles: Role[] = [];
@@ -291,15 +285,15 @@ export class UpdateConventionStatus extends TransactionalUseCase<
     userId: UserId,
     agencyId: AgencyId,
   ): Promise<string> {
-    const user = await getIcUserByUserId(uow, userId);
-    if (!user) throw errors.user.notFound({ userId });
-    const userAgencyRights = user.agencyRights.find(
+    const userWithRights = await getUserWithRights(uow, userId);
+    if (!userWithRights) throw errors.user.notFound({ userId });
+    const userAgencyRights = userWithRights.agencyRights.find(
       (agencyRight) => agencyRight.agency.id === agencyId,
     );
     if (!userAgencyRights)
       throw errors.user.noRightsOnAgency({ agencyId, userId });
 
-    return user.email;
+    return userWithRights.email;
   }
 
   #createEvent(

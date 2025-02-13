@@ -10,6 +10,7 @@ import {
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { emptyName } from "../../core/authentication/inclusion-connect/entities/user.helper";
+import { StubDashboardGateway } from "../../core/dashboard/adapters/StubDashboardGateway";
 import {
   CreateNewEvent,
   makeCreateNewEvent,
@@ -81,7 +82,11 @@ describe("CreateUserForAgency", () => {
     });
     createUserForAgency = makeCreateUserForAgency({
       uowPerformer: new InMemoryUowPerformer(uow),
-      deps: { timeGateway, createNewEvent },
+      deps: {
+        timeGateway,
+        createNewEvent,
+        dashboardGateway: new StubDashboardGateway(),
+      },
     });
     uow.agencyRepository.agencies = [
       toAgencyWithRights(agencyWithCounsellor, {

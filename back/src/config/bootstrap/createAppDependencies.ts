@@ -110,6 +110,8 @@ export const createAppDependencies = async (config: AppConfig) => {
     inclusionConnectAuthMiddleware: await makeInclusionConnectAuthMiddleware(
       config.jwtPublicKey,
       uowPerformer,
+      gateways.dashboardGateway,
+      gateways.timeGateway,
     ),
     generateEditEstablishmentJwt,
     generateConventionJwt,

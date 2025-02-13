@@ -4,15 +4,19 @@ import {
   InclusionConnectedUser,
   errors,
 } from "shared";
+import { makeProvider } from "../../core/authentication/inclusion-connect/port/OAuthGateway";
 import { UserOnRepository } from "../../core/authentication/inclusion-connect/port/UserRepository";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
-import { getIcUserByUserId } from "./inclusionConnectedUser.helper";
 
 export const throwIfIcUserNotBackofficeAdmin = async (
   uow: UnitOfWork,
   jwtPayload: InclusionConnectDomainJwtPayload,
 ) => {
-  const user = await getIcUserByUserId(uow, jwtPayload.userId);
+  const user = await uow.userRepository.getById(
+    jwtPayload.userId,
+    await makeProvider(uow),
+  );
+  if (!user) throw errors.user.notFound({ userId: jwtPayload.userId });
   if (!user.isBackofficeAdmin)
     throw errors.user.notBackOfficeAdmin({ userId: jwtPayload.userId });
 };

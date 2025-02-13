@@ -98,10 +98,11 @@ export type WithIsBackOfficeAdmin = {
   isBackofficeAdmin?: boolean;
 };
 
-export type InclusionConnectedUser = UserWithAgencyRights &
+export type UserWithRights = UserWithAgencyRights &
   WithEstablishments &
-  WithDashboards &
   WithIsBackOfficeAdmin;
+
+export type InclusionConnectedUser = UserWithRights & WithDashboards;
 
 export type WithOptionalUserId = {
   userId?: UserId;
