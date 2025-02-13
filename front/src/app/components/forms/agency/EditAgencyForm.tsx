@@ -15,10 +15,7 @@ import {
   domElementIds,
   editAgencySchema,
 } from "shared";
-import {
-  AgencyFormCommonFields,
-  AgencyLogoUpload,
-} from "src/app/components/forms/agency/AgencyFormCommonFields";
+import { AgencyFormCommonFields } from "src/app/components/forms/agency/AgencyFormCommonFields";
 import { AgencyOverviewRouteName } from "src/app/components/forms/agency/AgencyOverview";
 import { formAgencyFieldsLabels } from "src/app/contents/forms/agency/formAgency";
 import {
@@ -136,8 +133,6 @@ export const EditAgencyForm = ({
               />
             </>
           )}
-
-          <AgencyLogoUpload />
         </div>
         <ErrorNotifications
           errorsWithLabels={toErrorsWithLabels({

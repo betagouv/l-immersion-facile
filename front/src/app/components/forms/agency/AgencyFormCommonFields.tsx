@@ -8,14 +8,10 @@ import {
   domElementIds,
   emailSchema,
 } from "shared";
-import { UploadFile } from "src/app/components/UploadFile";
 import { AddressAutocomplete } from "src/app/components/forms/autocomplete/AddressAutocomplete";
 import { MultipleEmailsInput } from "src/app/components/forms/commons/MultipleEmailsInput";
 import { RadioGroup } from "src/app/components/forms/commons/RadioGroup";
-import {
-  FormAgencyFieldsLabels,
-  formAgencyFieldsLabels,
-} from "src/app/contents/forms/agency/formAgency";
+import { formAgencyFieldsLabels } from "src/app/contents/forms/agency/formAgency";
 import {
   getFormContents,
   makeFieldError,
@@ -192,26 +188,4 @@ const numberOfStepsOptions: { label: string; value: ValidationSteps }[] = [
 const descriptionByValidationSteps: Record<ValidationSteps, React.ReactNode> = {
   validatorsOnly: formAgencyFieldsLabels.counsellorEmails.hintText,
   counsellorsAndValidators: formAgencyFieldsLabels.validatorEmails.hintText,
-};
-
-export const AgencyLogoUpload = () => {
-  const { getValues, setValue } = useFormContext<CreateAgencyDto>();
-  const { getFormFields } = getFormContents(formAgencyFieldsLabels);
-  const fieldsContent: FormAgencyFieldsLabels = getFormFields();
-  const formValues = getValues();
-
-  return (
-    <>
-      <UploadFile
-        setFileUrl={(value) => setValue("logoUrl", value)}
-        maxSize_Mo={2}
-        {...formAgencyFieldsLabels.logoUrl}
-        hint={fieldsContent.logoUrl.hintText}
-        renameFileToId={true}
-      />
-      {formValues.logoUrl && (
-        <img src={formValues.logoUrl} alt="uploaded-logo" width="100px" />
-      )}
-    </>
-  );
 };

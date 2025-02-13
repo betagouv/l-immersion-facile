@@ -22,10 +22,7 @@ import {
 } from "shared";
 import { SubmitFeedbackNotification } from "src/app/components/SubmitFeedbackNotification";
 import { agenciesSubmitMessageByKind } from "src/app/components/agency/AgencySubmitFeedback";
-import {
-  AgencyFormCommonFields,
-  AgencyLogoUpload,
-} from "src/app/components/forms/agency/AgencyFormCommonFields";
+import { AgencyFormCommonFields } from "src/app/components/forms/agency/AgencyFormCommonFields";
 import { agencyListOfOptions } from "src/app/components/forms/agency/agencyKindToLabel";
 import {
   AgencySelector,
@@ -333,7 +330,6 @@ const AgencyForm = ({
                   mode="create"
                   disableAgencyName={false}
                 />
-                <AgencyLogoUpload />
 
                 <ErrorNotifications
                   errorsWithLabels={toErrorsWithLabels({
