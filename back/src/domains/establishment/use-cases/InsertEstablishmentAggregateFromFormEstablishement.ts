@@ -1,5 +1,7 @@
 import { prop, uniqBy } from "ramda";
 import {
+  FormEstablishmentDto,
+  InclusionConnectedUser,
   WithFormEstablishmentDto,
   errors,
   withFormEstablishmentSchema,
@@ -10,7 +12,9 @@ import { getNafAndNumberOfEmployee } from "../../../utils/siret";
 import { TransactionalUseCase } from "../../core/UseCase";
 import { AddressGateway } from "../../core/address/ports/AddressGateway";
 import { createOrGetUserIdByEmail } from "../../core/authentication/inclusion-connect/entities/user.helper";
+import { TriggeredBy } from "../../core/events/events";
 import { CreateNewEvent } from "../../core/events/ports/EventBus";
+import { rejectsSiretIfNotAnOpenCompany } from "../../core/sirene/helpers/rejectsSiretIfNotAnOpenCompany";
 import { SiretGateway } from "../../core/sirene/ports/SiretGateway";
 import { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
@@ -21,7 +25,8 @@ import { makeEstablishmentAggregate } from "../helpers/makeEstablishmentAggregat
 
 export class InsertEstablishmentAggregateFromForm extends TransactionalUseCase<
   WithFormEstablishmentDto,
-  void
+  void,
+  InclusionConnectedUser
 > {
   protected inputSchema = withFormEstablishmentSchema;
 
@@ -39,6 +44,7 @@ export class InsertEstablishmentAggregateFromForm extends TransactionalUseCase<
   protected async _execute(
     { formEstablishment }: WithFormEstablishmentDto,
     uow: UnitOfWork,
+    currentUser?: InclusionConnectedUser,
   ): Promise<void> {
     const establishment =
       await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
@@ -50,6 +56,42 @@ export class InsertEstablishmentAggregateFromForm extends TransactionalUseCase<
         siret: formEstablishment.siret,
       });
 
+    await rejectsSiretIfNotAnOpenCompany(
+      this.siretGateway,
+      formEstablishment.siret,
+    );
+
+    const appellations =
+      await uow.romeRepository.getAppellationAndRomeDtosFromAppellationCodes(
+        formEstablishment.appellations.map(
+          ({ appellationCode }) => appellationCode,
+        ),
+      );
+
+    const correctFormEstablishment: FormEstablishmentDto = {
+      ...formEstablishment,
+      appellations,
+      businessNameCustomized:
+        formEstablishment.businessNameCustomized?.trim().length === 0
+          ? undefined
+          : formEstablishment.businessNameCustomized,
+    };
+
+    const triggeredBy: TriggeredBy | null = currentUser
+      ? {
+          kind: "inclusion-connected",
+          userId: currentUser.id,
+        }
+      : null;
+
+    await this.next(uow, correctFormEstablishment, triggeredBy);
+  }
+
+  private async next(
+    uow: UnitOfWork,
+    formEstablishment: FormEstablishmentDto,
+    triggeredBy: TriggeredBy | null,
+  ) {
     const { businessContact } = formEstablishment;
 
     const establishmentAdminId = await createOrGetUserIdByEmail(

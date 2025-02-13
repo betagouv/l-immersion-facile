@@ -105,11 +105,6 @@ const getUseCasesByTopics = (
   ConventionReminderRequired: [useCases.notifyConventionReminder],
 
   // Establishment form related
-  FormEstablishmentAdded: [
-    useCases.insertEstablishmentAggregateFromForm,
-    useCases.notifyConfirmationEstablishmentCreated,
-    useCases.markEstablishmentLeadAsRegistrationAccepted,
-  ],
   FormEstablishmentEdited: [useCases.updateEstablishmentAggregateFromForm],
   FormEstablishmentEditLinkSent: [],
   UpdatedEstablishmentAggregateInsertedFromForm: [
@@ -125,6 +120,8 @@ const getUseCasesByTopics = (
         },
       }) => useCases.updateMarketingEstablishmentContactList.execute({ siret }),
     },
+    useCases.notifyConfirmationEstablishmentCreated,
+    useCases.markEstablishmentLeadAsRegistrationAccepted,
   ],
   // Establishment lead related
   EstablishmentLeadReminderSent: [],

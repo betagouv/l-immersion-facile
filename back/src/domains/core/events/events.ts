@@ -127,7 +127,6 @@ export type DomainEvent =
   | GenericEvent<"MagicLinkRenewalRequested", RenewMagicLinkPayload & WithTriggeredBy>
 
   // FORM ESTABLISHMENT RELATED
-  | GenericEvent<"FormEstablishmentAdded", WithFormEstablishmentDto & WithTriggeredBy>
   | GenericEvent<"FormEstablishmentEdited", WithFormEstablishmentDto & WithTriggeredBy>
   | GenericEvent<"ContactRequestedByBeneficiary", ContactEstablishmentEventPayload & WithTriggeredBy>
   | GenericEvent<"FormEstablishmentEditLinkSent", EstablishmentJwtPayload & WithTriggeredBy>

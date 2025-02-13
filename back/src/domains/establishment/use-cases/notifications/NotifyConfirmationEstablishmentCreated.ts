@@ -1,11 +1,11 @@
-import { WithFormEstablishmentDto, withFormEstablishmentSchema } from "shared";
+import { WithSiretDto, errors, withSiretSchema } from "shared";
 import { TransactionalUseCase } from "../../../core/UseCase";
 import { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { UnitOfWorkPerformer } from "../../../core/unit-of-work/ports/UnitOfWorkPerformer";
 
-export class NotifyConfirmationEstablishmentCreated extends TransactionalUseCase<WithFormEstablishmentDto> {
-  protected inputSchema = withFormEstablishmentSchema;
+export class NotifyConfirmationEstablishmentCreated extends TransactionalUseCase<WithSiretDto> {
+  protected inputSchema = withSiretSchema;
 
   readonly #saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
 
@@ -18,9 +18,20 @@ export class NotifyConfirmationEstablishmentCreated extends TransactionalUseCase
   }
 
   public async _execute(
-    { formEstablishment }: WithFormEstablishmentDto,
+    { siret }: WithSiretDto,
     uow: UnitOfWork,
   ): Promise<void> {
+    const establishment =
+      await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
+        siret,
+      );
+
+    if (!establishment) throw errors.establishment.notFound({ siret });
+
+    const firstAdmin = establishment.userRights.find(
+      (user) => user.role === "establishment-admin",
+    );
+
     await this.#saveNotificationAndRelatedEvent(uow, {
       kind: "email",
       templatedContent: {

@@ -28,7 +28,9 @@ export const createEstablishmentRouter = (deps: AppDependencies) => {
 
   establishmentSharedRouter.addFormEstablishment((req, res) =>
     sendHttpResponse(req, res, () =>
-      deps.useCases.addFormEstablishment.execute(req.body),
+      deps.useCases.insertEstablishmentAggregateFromForm.execute({
+        formEstablishment: req.body,
+      }),
     ),
   );
 

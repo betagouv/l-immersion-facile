@@ -11,7 +11,7 @@ import { UseCase } from "../../core/UseCase";
 import { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { throwIfNotAdmin } from "../../inclusion-connected-users/helpers/authorization.helper";
 import { GroupEntity } from "../entities/GroupEntity";
-import { AddFormEstablishment } from "./AddFormEstablishment";
+import { InsertEstablishmentAggregateFromForm } from "./InsertEstablishmentAggregateFromFormEstablishement";
 
 export class AddFormEstablishmentBatch extends UseCase<
   FormEstablishmentBatchDto,
@@ -21,7 +21,7 @@ export class AddFormEstablishmentBatch extends UseCase<
   protected inputSchema = formEstablishmentBatchSchema;
 
   constructor(
-    private addFormEstablishmentUseCase: AddFormEstablishment,
+    private insertEstablishmentAggregateFromForm: InsertEstablishmentAggregateFromForm,
     private uowPerformer: UnitOfWorkPerformer,
   ) {
     super();
@@ -67,10 +67,9 @@ export class AddFormEstablishmentBatch extends UseCase<
       await Promise.all(
         chunkOfFormEstablishments.map(async (formEstablishment) => {
           try {
-            await this.addFormEstablishmentUseCase.execute(
+            await this.insertEstablishmentAggregateFromForm.execute({
               formEstablishment,
-              currentUser,
-            );
+            });
             report.numberOfSuccess += 1;
           } catch (error) {
             report.failures.push({
