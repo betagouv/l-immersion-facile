@@ -12,6 +12,7 @@ import { FrontAgencyDashboardRoute } from "src/app/routes/InclusionConnectedPriv
 import { outOfReduxDependencies } from "src/config/dependencies";
 import { agenciesSlice } from "src/core-logic/domain/agencies/agencies.slice";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
+import { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 import { inclusionConnectedSelectors } from "src/core-logic/domain/inclusionConnected/inclusionConnected.selectors";
 import { P, match } from "ts-pattern";
 import { AgencyDashboard } from "../../components/agency/agency-dashboard/AgencyDashboard";
@@ -28,6 +29,8 @@ export const AgencyDashboardPage = ({
   const inclusionConnectedJwt = useAppSelector(
     authSelectors.inclusionConnectToken,
   );
+
+  const feedbackTopic: FeedbackTopic = "dashboard-agency-register-user";
 
   const siretInDeviceStorage =
     outOfReduxDependencies.localDeviceRepository.get("connectedUserSiret");
@@ -46,7 +49,7 @@ export const AgencyDashboardPage = ({
     <>
       <h1>Mon espace prescripteur</h1>
       {isLoading && <Loader />}
-      <Feedback topic="dashboard-agency-register-user" />
+      <Feedback topic={feedbackTopic} />
 
       {match({ currentUser })
         .with(
@@ -110,6 +113,7 @@ export const AgencyDashboardPage = ({
               <NoActiveAgencyRights
                 toReviewAgencyRights={toReviewAgencyRights}
                 currentUser={currentUser}
+                feedbackTopic={feedbackTopic}
               />
             );
           },

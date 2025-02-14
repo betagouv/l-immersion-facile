@@ -1,4 +1,5 @@
 import {
+  AgencyDto,
   AgencyDtoBuilder,
   AgencyRight,
   ConventionDtoBuilder,
@@ -11,6 +12,8 @@ import {
   inclusionConnectTokenExpiredMessage,
   toAgencyDtoForAgencyUsersAndAdmins,
 } from "shared";
+import { removeUserFromAgencySelectors } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.selectors";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySelectors } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.selectors";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import { conventionSlice } from "src/core-logic/domain/convention/convention.slice";
@@ -444,6 +447,85 @@ describe("InclusionConnected", () => {
 
       expectToEqual(
         updateUserOnAgencySelectors.isLoading(store.getState()),
+        false,
+      );
+      expectToEqual(
+        inclusionConnectedSelectors.currentUser(store.getState()),
+        user,
+      );
+    });
+  });
+
+  describe("when current user has successfully requested removal from agency of another user", () => {
+    let user: InclusionConnectedUser;
+    let agency: AgencyDto;
+
+    beforeEach(() => {
+      agency = new AgencyDtoBuilder().build();
+      const agencyRight: AgencyRight = {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(
+          new AgencyDtoBuilder().build(),
+          [],
+        ),
+        roles: ["to-review"],
+        isNotifiedByEmail: false,
+      };
+      user = new InclusionConnectedUserBuilder()
+        .withId("user-id")
+        .withIsAdmin(false)
+        .withAgencyRights([agencyRight])
+        .build();
+
+      ({ store, dependencies } = createTestStore({
+        inclusionConnected: {
+          currentUser: user,
+          agenciesToReview: [],
+          isLoading: false,
+        },
+      }));
+    });
+
+    it("if it is himself, remove the user rights successfully", () => {
+      store.dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          userId: user.id,
+          agencyId: agency.id,
+          feedbackTopic: "user",
+        }),
+      );
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
+        true,
+      );
+      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
+
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
+        false,
+      );
+      expectToEqual(inclusionConnectedSelectors.currentUser(store.getState()), {
+        ...user,
+        agencyRights: [],
+      });
+    });
+
+    it("if it is not himself, do nothing", () => {
+      // const agency = new AgencyDtoBuilder().build();
+      store.dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          userId: "another-user-id",
+          agencyId: agency.id,
+          feedbackTopic: "user",
+        }),
+      );
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
+        true,
+      );
+      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
+
+      expectToEqual(
+        removeUserFromAgencySelectors.isLoading(store.getState()),
         false,
       );
       expectToEqual(

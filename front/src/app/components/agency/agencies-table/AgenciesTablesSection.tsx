@@ -56,6 +56,8 @@ export const AgenciesTablesSection = ({
 
           <OnGoingAgencyRightsTable
             agenciesWithToReviewRights={toReviewAgencyRights}
+            userId={user.id}
+            feedbackTopic="user"
           />
         </>
       )}

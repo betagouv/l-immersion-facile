@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { AgencyDto, InclusionConnectedUser, WithAgencyIds } from "shared";
 import { updateUserAgencyRights } from "src/core-logic/domain/agencies/agencies.helpers";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import {
   PayloadActionWithFeedbackTopic,
@@ -74,6 +75,20 @@ export const inclusionConnectedSlice = createSlice({
         state.currentUser = updateUserAgencyRights(
           state.currentUser,
           action.payload,
+        );
+      },
+    );
+    builder.addCase(
+      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
+      (state, action) => {
+        if (
+          !state.currentUser ||
+          state.currentUser.id !== action.payload.userId
+        )
+          return;
+
+        state.currentUser.agencyRights = state.currentUser.agencyRights.filter(
+          (right) => right.agency.id !== action.payload.agencyId,
         );
       },
     );

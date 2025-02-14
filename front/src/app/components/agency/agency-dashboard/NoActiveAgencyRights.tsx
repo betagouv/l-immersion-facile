@@ -4,14 +4,17 @@ import React, { useState } from "react";
 import { AgencyRight, InclusionConnectedUser } from "shared";
 import { RegisterAgenciesForm } from "src/app/components/forms/register-agencies/RegisterAgenciesForm";
 import { commonIllustrations } from "src/assets/img/illustrations";
+import { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 import { OnGoingAgencyRightsTable } from "../agencies-table/OnGoingAgencyRightsTable";
 
 export function NoActiveAgencyRights({
   toReviewAgencyRights,
   currentUser,
+  feedbackTopic,
 }: {
   toReviewAgencyRights: AgencyRight[];
   currentUser: InclusionConnectedUser;
+  feedbackTopic: FeedbackTopic;
 }): JSX.Element {
   const [showRegistrationForm, setShowRegistrationForm] =
     useState<boolean>(false);
@@ -47,6 +50,8 @@ export function NoActiveAgencyRights({
           </p>
           <OnGoingAgencyRightsTable
             agenciesWithToReviewRights={toReviewAgencyRights}
+            userId={currentUser.id}
+            feedbackTopic={feedbackTopic}
           />
         </div>
       </div>

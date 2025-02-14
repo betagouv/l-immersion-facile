@@ -654,6 +654,7 @@ export const domElementIds = {
     email: "im-profile__email",
     editRoleButton: "im-profile__edit-role-button",
     adminAgencyLink: "im-profile__admin-agency-link",
+    cancelRegistrationButton: "im-profile__cancel-registration-button",
     updateOwnInfosLink: "im-profile__update-own-infos-link",
     editAgencyUserEmail: "im-profile-edit-agency-user__email",
     editAgencyManageUserCheckbox:

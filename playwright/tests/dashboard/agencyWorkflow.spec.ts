@@ -47,9 +47,11 @@ test.describe("Agency dashboard workflow", () => {
       await page.waitForTimeout(testConfig.timeForEventCrawler);
     });
   });
-  test.describe("Agency activation by Ic user", () => {
+  test.describe("Agency registration by Ic user", () => {
+    const registeredAgencyCount = 2;
+
     test.use({ storageState: testConfig.agencyAuthFile });
-    test(`an Ic user should be able to ask to be registered to an agency (${agencyId})`, async ({
+    test("an Ic user should be able to ask to be registered to an agency", async ({
       page,
     }) => {
       await page.goto("/");
@@ -61,14 +63,16 @@ test.describe("Agency dashboard workflow", () => {
       ).toBeVisible();
       await page
         .locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`)
-        .fill("Cap emploi");
+        .fill("conseil-departemental");
 
-      await page
-        .locator(
-          `#${domElementIds.agencyDashboard.registerAgencies.table} table tbody tr .fr-checkbox-group`,
-        )
-        .first()
-        .click();
+      for (const index of [...Array(registeredAgencyCount).keys()]) {
+        await page
+          .locator(
+            `#${domElementIds.agencyDashboard.registerAgencies.table} table tbody tr .fr-checkbox-group`,
+          )
+          .nth(index)
+          .click();
+      }
 
       await page
         .locator(
@@ -76,9 +80,39 @@ test.describe("Agency dashboard workflow", () => {
         )
         .click();
 
+      await expect(page.locator(".fr-alert--success").first()).toBeVisible();
+
+      await expect(
+        page.locator(`[id^=${domElementIds.profile.cancelRegistrationButton}]`),
+      ).toHaveCount(registeredAgencyCount);
+    });
+
+    test("an Ic user should be able to ask to cancel a registration request to an agency", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      await goToDashboard(page, "agency");
+
+      expect(
+        await page
+          .locator(`[id^="${domElementIds.profile.cancelRegistrationButton}"]`)
+          .count(),
+      ).toBe(registeredAgencyCount);
+
+      await page
+        .locator(`[id^="${domElementIds.profile.cancelRegistrationButton}"]`)
+        .first()
+        .click();
+
       await expect(
         await page.locator(".fr-alert--success").first(),
       ).toBeVisible();
+
+      expect(
+        await page
+          .locator(`[id^="${domElementIds.profile.cancelRegistrationButton}"]`)
+          .count(),
+      ).toBe(registeredAgencyCount - 1);
     });
   });
 

@@ -10,7 +10,6 @@ import {
   UserId,
 } from "../inclusionConnectedAllowed/inclusionConnectedAllowed.dto";
 import { SiretDto } from "../siret/siret";
-import { OmitFromExistingKeys } from "../utils";
 
 export type WithAgencyIdAndUserId = {
   agencyId: AgencyId;
@@ -23,10 +22,7 @@ export type UserParamsForAgency = WithAgencyIdAndUserId & {
   email: Email;
 };
 
-export type RejectIcUserRoleForAgencyParams = OmitFromExistingKeys<
-  UserParamsForAgency,
-  "roles" | "isNotifiedByEmail" | "email"
-> & {
+export type RejectIcUserRoleForAgencyParams = WithAgencyIdAndUserId & {
   justification: string;
 };
 
