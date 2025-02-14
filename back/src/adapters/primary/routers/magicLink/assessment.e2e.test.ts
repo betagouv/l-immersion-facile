@@ -90,6 +90,12 @@ describe("Assessment routes", () => {
 
       expect(gateways.notification.getSentEmails()).toMatchObject([
         {
+          kind: "ASSESSMENT_CREATED_ESTABLISHMENT_NOTIFICATION",
+          recipients: [
+            convention.signatories.establishmentRepresentative.email,
+          ],
+        },
+        {
           kind: "ASSESSMENT_CREATED_WITH_STATUS_COMPLETED_AGENCY_NOTIFICATION",
           recipients: [validator.email],
         },

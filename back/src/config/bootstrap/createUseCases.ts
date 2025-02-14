@@ -44,6 +44,7 @@ import { NotifyAllActorsThatConventionIsCancelled } from "../../domains/conventi
 import { NotifyAllActorsThatConventionIsDeprecated } from "../../domains/convention/use-cases/notifications/NotifyAllActorsThatConventionIsDeprecated";
 import { NotifyAllActorsThatConventionIsRejected } from "../../domains/convention/use-cases/notifications/NotifyAllActorsThatConventionIsRejected";
 import { NotifyConventionReminder } from "../../domains/convention/use-cases/notifications/NotifyConventionReminder";
+import { makeNotifyEstablishmentThatAssessmentWasCreated } from "../../domains/convention/use-cases/notifications/NotifyEstablishmentThatAssessmentWasCreated";
 import { NotifyIcUserAgencyRightChanged } from "../../domains/convention/use-cases/notifications/NotifyIcUserAgencyRightChanged";
 import { NotifyIcUserAgencyRightRejected } from "../../domains/convention/use-cases/notifications/NotifyIcUserAgencyRightRejected";
 import { NotifyLastSigneeThatConventionHasBeenSigned } from "../../domains/convention/use-cases/notifications/NotifyLastSigneeThatConventionHasBeenSigned";
@@ -177,10 +178,11 @@ export const createUseCases = (
     generateConventionJwt,
   );
 
-  const generateConventionStatusLinkUrl = makeGenerateConventionMagicLinkUrl(
-    config,
-    generateConventionLongDurationJwt,
-  );
+  const generateConventionLongDurationLinkUrl =
+    makeGenerateConventionMagicLinkUrl(
+      config,
+      generateConventionLongDurationJwt,
+    );
 
   const addConvention = new AddConvention(
     uowPerformer,
@@ -469,7 +471,7 @@ export const createUseCases = (
         new NotifyLastSigneeThatConventionHasBeenSigned(
           uowPerformer,
           saveNotificationAndRelatedEvent,
-          generateConventionStatusLinkUrl,
+          generateConventionLongDurationLinkUrl,
           gateways.timeGateway,
         ),
       notifyAllActorsOfFinalConventionValidation:
@@ -643,6 +645,15 @@ export const createUseCases = (
         generateConventionMagicLinkUrl,
       },
     }),
+    notifyEstablishmentThatAssessmentWasCreated:
+      makeNotifyEstablishmentThatAssessmentWasCreated({
+        uowPerformer,
+        deps: {
+          saveNotificationAndRelatedEvent,
+          generateLink: generateConventionLongDurationLinkUrl,
+          timeGateway: gateways.timeGateway,
+        },
+      }),
     getAgencyById: makeGetAgencyById({
       uowPerformer,
     }),

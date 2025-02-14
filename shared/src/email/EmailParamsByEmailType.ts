@@ -113,6 +113,13 @@ export type EmailParamsByEmailType = {
     establishmentTutorName: string;
     internshipKind: InternshipKind;
   };
+  ASSESSMENT_CREATED_ESTABLISHMENT_NOTIFICATION: {
+    recipientFullName: string;
+    beneficiaryFullName: string;
+    businessName: string;
+    linkToAssessment: AbsoluteUrl;
+    internshipKind: InternshipKind;
+  };
   ASSESSMENT_CREATED_WITH_STATUS_COMPLETED_AGENCY_NOTIFICATION: {
     immersionObjective: ImmersionObjective | undefined;
     conventionId: ConventionId;

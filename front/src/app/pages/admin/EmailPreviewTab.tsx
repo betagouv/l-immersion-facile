@@ -309,6 +309,13 @@ export const defaultEmailValueByEmailKind: {
     assessmentCreationLink: "ASSESSMENT_CREATION_LINK",
     internshipKind: "immersion",
   },
+  ASSESSMENT_CREATED_ESTABLISHMENT_NOTIFICATION: {
+    internshipKind: "immersion",
+    beneficiaryFullName: "BENEFICIARY_FULL_NAME",
+    recipientFullName: "RECIPIENT_FULL_NAME",
+    businessName: "BUSINESS_NAME",
+    linkToAssessment: "http://fake.url",
+  },
   BENEFICIARY_OR_ESTABLISHMENT_REPRESENTATIVE_ALREADY_SIGNED_NOTIFICATION: {
     agencyLogoUrl: defaultEmailPreviewUrl,
     beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",
