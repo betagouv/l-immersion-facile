@@ -1,7 +1,10 @@
+import { differenceInCalendarISOWeekYears } from "date-fns";
 import { keys, mapObjIndexed, values } from "ramda";
 import { Role, SignatoryRole, allSignatoryRoles } from "../role/role.dto";
 import { DotNestedKeys } from "../utils";
+import { DateString } from "../utils/date";
 import {
+  BeneficiaryRepresentative,
   ConventionDto,
   ConventionRenewed,
   ConventionStatus,
@@ -108,9 +111,32 @@ export const isEstablishmentTutorIsEstablishmentRepresentative = (
   );
 };
 
-export const isBeneficiaryMinor = (
-  convention: Pick<ConventionDto, "signatories">,
-): boolean => !!convention.signatories.beneficiaryRepresentative;
+export const isBeneficiaryMinorAccordingToAge = (
+  conventionDateStart: DateString,
+  beneficiaryBirthdate: string,
+): boolean => {
+  const age = differenceInCalendarISOWeekYears(
+    new Date(conventionDateStart),
+    new Date(beneficiaryBirthdate),
+  );
+  return age < 18;
+};
+
+export const isBeneficiaryMinor = ({
+  beneficiaryRepresentative,
+  beneficiaryBirthdate,
+  conventionDateStart,
+}: {
+  beneficiaryBirthdate: string;
+  beneficiaryRepresentative?: BeneficiaryRepresentative;
+  conventionDateStart?: DateString;
+}): boolean =>
+  !!beneficiaryRepresentative ||
+  (!!conventionDateStart &&
+    isBeneficiaryMinorAccordingToAge(
+      conventionDateStart,
+      beneficiaryBirthdate,
+    ));
 
 export const hasBeneficiaryCurrentEmployer = (
   convention: Pick<ConventionDto, "signatories">,

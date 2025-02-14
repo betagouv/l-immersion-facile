@@ -1,7 +1,6 @@
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import { differenceInYears } from "date-fns";
 import { keys } from "ramda";
 import React, { useCallback, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -13,6 +12,7 @@ import {
   addressDtoToString,
   domElementIds,
   emailSchema,
+  isBeneficiaryMinorAccordingToAge,
   isBeneficiaryStudent,
   levelsOfEducation,
   toLowerCaseWithoutDiacritics,
@@ -119,11 +119,10 @@ export const BeneficiaryFormSection = ({
 
   const onBirthdateChange = useCallback(
     (value: string) => {
-      const age = differenceInYears(
-        new Date(values.dateStart),
-        new Date(value),
+      const newIsMinor = isBeneficiaryMinorAccordingToAge(
+        values.dateStart,
+        value,
       );
-      const newIsMinor = age < 18;
       if (newIsMinor) {
         setValue(
           "signatories.beneficiaryRepresentative.role",
@@ -136,7 +135,7 @@ export const BeneficiaryFormSection = ({
       setIsMinorAccordingToAge(newIsMinor);
       dispatch(conventionSlice.actions.isMinorChanged(newIsMinor));
     },
-    [dispatch, values.dateStart, setValue, getValues],
+    [dispatch, values.dateStart, setValue, isMinorOrProtected],
   );
 
   useEffect(() => {
