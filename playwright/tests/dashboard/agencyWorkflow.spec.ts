@@ -48,6 +48,8 @@ test.describe("Agency dashboard workflow", () => {
     });
   });
   test.describe("Agency registration by Ic user", () => {
+    const registeredAgencyCount = 2;
+
     test.use({ storageState: testConfig.agencyAuthFile });
     test("an Ic user should be able to ask to be registered to an agency", async ({
       page,
@@ -63,19 +65,14 @@ test.describe("Agency dashboard workflow", () => {
         .locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`)
         .fill("conseil-departemental");
 
-      await page
-        .locator(
-          `#${domElementIds.agencyDashboard.registerAgencies.table} table tbody tr .fr-checkbox-group`,
-        )
-        .first()
-        .click();
-
-      await page
-        .locator(
-          `#${domElementIds.agencyDashboard.registerAgencies.table} table tbody tr .fr-checkbox-group`,
-        )
-        .nth(1)
-        .click();
+      for (const index of [...Array(registeredAgencyCount).keys()]) {
+        await page
+          .locator(
+            `#${domElementIds.agencyDashboard.registerAgencies.table} table tbody tr .fr-checkbox-group`,
+          )
+          .nth(index)
+          .click();
+      }
 
       await page
         .locator(
@@ -83,9 +80,11 @@ test.describe("Agency dashboard workflow", () => {
         )
         .click();
 
+      await expect(page.locator(".fr-alert--success").first()).toBeVisible();
+
       await expect(
-        await page.locator(".fr-alert--success").first(),
-      ).toBeVisible();
+        page.locator(`[id^=${domElementIds.profile.cancelRegistrationButton}]`),
+      ).toHaveCount(registeredAgencyCount);
     });
 
     test("an Ic user should be able to ask to cancel a registration request to an agency", async ({
@@ -98,7 +97,7 @@ test.describe("Agency dashboard workflow", () => {
         await page
           .locator(`[id^="${domElementIds.profile.cancelRegistrationButton}"]`)
           .count(),
-      ).toBe(2);
+      ).toBe(registeredAgencyCount);
 
       await page
         .locator(`[id^="${domElementIds.profile.cancelRegistrationButton}"]`)
@@ -113,7 +112,7 @@ test.describe("Agency dashboard workflow", () => {
         await page
           .locator(`[id^="${domElementIds.profile.cancelRegistrationButton}"]`)
           .count(),
-      ).toBe(1);
+      ).toBe(registeredAgencyCount - 1);
     });
   });
 

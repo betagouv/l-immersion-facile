@@ -1,4 +1,5 @@
 import {
+  AgencyDto,
   AgencyDtoBuilder,
   AgencyRight,
   ConventionDtoBuilder,
@@ -455,9 +456,12 @@ describe("InclusionConnected", () => {
     });
   });
 
-  describe("when current user has successfully requested removal from agency  of another user", () => {
-    it("if it is himself, remove the user rights successfully", () => {
-      const agency = new AgencyDtoBuilder().build();
+  describe("when current user has successfully requested removal from agency of another user", () => {
+    let user: InclusionConnectedUser;
+    let agency: AgencyDto;
+
+    beforeEach(() => {
+      agency = new AgencyDtoBuilder().build();
       const agencyRight: AgencyRight = {
         agency: toAgencyDtoForAgencyUsersAndAdmins(
           new AgencyDtoBuilder().build(),
@@ -466,7 +470,7 @@ describe("InclusionConnected", () => {
         roles: ["to-review"],
         isNotifiedByEmail: false,
       };
-      const user: InclusionConnectedUser = new InclusionConnectedUserBuilder()
+      user = new InclusionConnectedUserBuilder()
         .withId("user-id")
         .withIsAdmin(false)
         .withAgencyRights([agencyRight])
@@ -479,7 +483,9 @@ describe("InclusionConnected", () => {
           isLoading: false,
         },
       }));
+    });
 
+    it("if it is himself, remove the user rights successfully", () => {
       store.dispatch(
         removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
           userId: user.id,
@@ -504,29 +510,7 @@ describe("InclusionConnected", () => {
     });
 
     it("if it is not himself, do nothing", () => {
-      const agency = new AgencyDtoBuilder().build();
-      const agencyRight: AgencyRight = {
-        agency: toAgencyDtoForAgencyUsersAndAdmins(
-          new AgencyDtoBuilder().build(),
-          [],
-        ),
-        roles: ["to-review"],
-        isNotifiedByEmail: false,
-      };
-      const user: InclusionConnectedUser = new InclusionConnectedUserBuilder()
-        .withId("user-id")
-        .withIsAdmin(false)
-        .withAgencyRights([agencyRight])
-        .build();
-
-      ({ store, dependencies } = createTestStore({
-        inclusionConnected: {
-          currentUser: user,
-          agenciesToReview: [],
-          isLoading: false,
-        },
-      }));
-
+      // const agency = new AgencyDtoBuilder().build();
       store.dispatch(
         removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
           userId: "another-user-id",

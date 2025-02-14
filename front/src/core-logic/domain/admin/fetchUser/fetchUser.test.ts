@@ -151,7 +151,7 @@ describe("Admin Users slice", () => {
     });
   });
 
-  describe("when user has successfully requested removal from agency of another user", () => {
+  describe("when user has successfully requested removal from agency", () => {
     it("if it is himself, remove the user rights successfully", () => {
       const agency = new AgencyDtoBuilder().build();
       const agencyRight: AgencyRight = {
