@@ -9,7 +9,7 @@ import {
   withConventionIdSchema,
 } from "shared";
 import { createTransactionalUseCase } from "../../core/UseCase";
-import { getIcUserByUserId } from "../../inclusion-connected-users/helpers/inclusionConnectedUser.helper";
+import { getUserWithRights } from "../../inclusion-connected-users/helpers/userRights.helper";
 
 export type GetApiConsumersByConvention = ReturnType<
   typeof makeGetApiConsumersByConvention
@@ -31,7 +31,7 @@ export const makeGetApiConsumersByConvention = createTransactionalUseCase<
         conventionId,
       });
 
-    const user = await getIcUserByUserId(uow, currentUser.id);
+    const user = await getUserWithRights(uow, currentUser.id);
 
     if (!user)
       throw errors.user.notFound({

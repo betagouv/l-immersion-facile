@@ -665,6 +665,7 @@ export const createUseCases = (
       deps: {
         timeGateway: gateways.timeGateway,
         createNewEvent,
+        dashboardGateway: gateways.dashboardGateway,
       },
     }),
     removeUserFromAgency: makeRemoveUserFromAgency({

@@ -9,6 +9,7 @@ import {
 import { createTransactionalUseCase } from "../../core/UseCase";
 import { emptyName } from "../../core/authentication/inclusion-connect/entities/user.helper";
 import { makeProvider } from "../../core/authentication/inclusion-connect/port/OAuthGateway";
+import { DashboardGateway } from "../../core/dashboard/port/DashboardGateway";
 import { CreateNewEvent } from "../../core/events/ports/EventBus";
 import { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
@@ -21,7 +22,11 @@ export const makeCreateUserForAgency = createTransactionalUseCase<
   UserParamsForAgency,
   InclusionConnectedUser,
   InclusionConnectedUser,
-  { timeGateway: TimeGateway; createNewEvent: CreateNewEvent }
+  {
+    timeGateway: TimeGateway;
+    createNewEvent: CreateNewEvent;
+    dashboardGateway: DashboardGateway;
+  }
 >(
   {
     name: "CreateUserForAgency",
@@ -73,7 +78,12 @@ export const makeCreateUserForAgency = createTransactionalUseCase<
       ),
     ]);
 
-    return getIcUserByUserId(uow, user.id);
+    return getIcUserByUserId(
+      uow,
+      user.id,
+      deps.dashboardGateway,
+      deps.timeGateway,
+    );
   },
 );
 

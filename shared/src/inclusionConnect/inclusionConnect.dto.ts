@@ -1,8 +1,7 @@
-import { Flavor, InclusionConnectJwt } from "..";
+import { Flavor, InclusionConnectJwt, UserWithRights } from "..";
 import { ConventionDto } from "../convention/convention.dto";
 import {
   AgencyRole,
-  InclusionConnectedUser,
   User,
 } from "../inclusionConnectedAllowed/inclusionConnectedAllowed.dto";
 import { ConventionEstablishmentRole, Role } from "../role/role.dto";
@@ -38,7 +37,7 @@ type InclusionConnectConventionManageAllowedRole =
 
 export const getIcUserRoleForAccessingConvention = (
   convention: ConventionDto,
-  user: InclusionConnectedUser,
+  user: UserWithRights,
 ): InclusionConnectConventionManageAllowedRole[] => {
   const roles: InclusionConnectConventionManageAllowedRole[] = [];
   if (user.isBackofficeAdmin) roles.push("back-office");
@@ -46,6 +45,7 @@ export const getIcUserRoleForAccessingConvention = (
     roles.push("establishment-representative");
   if (
     convention.establishmentTutor.email === user.email ||
+    // WUT ?
     user.establishments?.some((e) => e.siret === convention.siret)
   )
     roles.push("establishment-tutor");
