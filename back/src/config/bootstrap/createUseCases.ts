@@ -43,6 +43,7 @@ import { NotifyAllActorsOfFinalConventionValidation } from "../../domains/conven
 import { NotifyAllActorsThatConventionIsCancelled } from "../../domains/convention/use-cases/notifications/NotifyAllActorsThatConventionIsCancelled";
 import { NotifyAllActorsThatConventionIsDeprecated } from "../../domains/convention/use-cases/notifications/NotifyAllActorsThatConventionIsDeprecated";
 import { NotifyAllActorsThatConventionIsRejected } from "../../domains/convention/use-cases/notifications/NotifyAllActorsThatConventionIsRejected";
+import { makeNotifyBeneficiaryThatAssessmentIsCreated } from "../../domains/convention/use-cases/notifications/NotifyBeneficiaryThatAssessmentIsCreated";
 import { NotifyConventionReminder } from "../../domains/convention/use-cases/notifications/NotifyConventionReminder";
 import { NotifyIcUserAgencyRightChanged } from "../../domains/convention/use-cases/notifications/NotifyIcUserAgencyRightChanged";
 import { NotifyIcUserAgencyRightRejected } from "../../domains/convention/use-cases/notifications/NotifyIcUserAgencyRightRejected";
@@ -657,6 +658,15 @@ export const createUseCases = (
     getAssessmentByConventionId: makeGetAssessmentByConventionId({
       uowPerformer,
     }),
+    notifyBeneficiaryThatAssessmentIsCreated:
+      makeNotifyBeneficiaryThatAssessmentIsCreated({
+        uowPerformer,
+        deps: {
+          saveNotificationAndRelatedEvent,
+          generateConventionMagicLinkUrl,
+          timeGateway: gateways.timeGateway,
+        },
+      }),
     listActiveSubscriptions: makeListActiveSubscriptions({
       uowPerformer,
     }),

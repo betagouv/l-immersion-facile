@@ -50,7 +50,7 @@ describe("GetAssessmentByConventionId", () => {
   };
   const [passingRoles, failingRoles] = splitCasesBetweenPassingAndFailing(
     allRoles,
-    ["establishment-tutor", "validator", "counsellor"],
+    ["establishment-tutor", "validator", "counsellor", "beneficiary"],
   );
 
   let getAssessment: GetAssessmentByConventionId;
@@ -103,7 +103,12 @@ describe("GetAssessmentByConventionId", () => {
           getAssessment.execute(
             { conventionId: convention.id },
             {
-              ...establishmentTutorPayload,
+              applicationId: convention.id,
+              emailHash: makeHashByRolesForTest(
+                convention,
+                counsellor,
+                validator,
+              )[role],
               role,
             },
           ),

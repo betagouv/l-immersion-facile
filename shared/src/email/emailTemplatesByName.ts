@@ -329,10 +329,47 @@ export const emailTemplatesByName =
         };
       },
     },
+    ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION: {
+      niceName: "Bilan - Bénéficiaire - Bilan complété",
+      tags: ["bilan_créé_bénéficiaire"],
+      createEmailVariables: ({
+        internshipKind,
+        conventionId,
+        beneficiaryFirstName,
+        beneficiaryLastName,
+        magicLink,
+      }) => {
+        return {
+          subject: `Immersion Facilitée - Le bilan de votre ${
+            internshipKind === "immersion" ? "immersion" : "mini-stage"
+          } est disponible ! `,
+          greetings: greetingsWithConventionId(
+            conventionId,
+            `${beneficiaryFirstName} ${beneficiaryLastName}`,
+          ),
+          content: `
+          <strong>Votre entreprise d'accueil a rédigé un avis concernant votre période ${
+            internshipKind === "immersion" ? "d'immersion" : "de mini-stage"
+          }.</strong> Ce retour peut être un atout pour vos futures candidatures en mettant en valeur vos expériences et compétences acquises.
+          
+          Pour consulter cet avis et le conserver dans votre dossier de candidature, vous pouvez le télécharger au format PDF en cliquant sur le bouton ci-dessous. Ce lien a une validité de 6 mois.
+          `,
+          buttons: [{ label: "Consulter mon bilan", url: magicLink }],
+          subContent: `
+          Nous vous encourageons à intégrer ce document dans vos candidatures afin de valoriser votre expérience auprès de vos futurs employeurs.
+          
+          N'hésitez pas à revenir vers nous si vous avez des questions ou besoin d'aide supplémentaire.
+           
+          ${defaultSignature(internshipKind)}
+          `,
+        };
+      },
+    },
     TEST_EMAIL: {
       niceName: "Email de test Immersion Facilitée",
       createEmailVariables: ({ input1, input2, url }) => ({
-        subject: "[Immersion Facilitée] Email transactionel de test",
+        subject:
+          "[Immersion Facilitée] Le bilan de votre immersion est disponible !",
         greetings: "Bonjour,",
         content: `
           Cet email vous a été envoyé dans le cadre d'un test.

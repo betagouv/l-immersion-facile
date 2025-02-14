@@ -31,6 +31,7 @@ export const makeGetAssessmentByConventionId = createTransactionalUseCase<
     );
 
     throwForbiddenIfNotAllowedForAssessments(
+      "GetAssessment",
       convention,
       await agencyWithRightToAgencyDto(uow, agency),
       currentUser,

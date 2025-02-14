@@ -9,6 +9,7 @@ import {
   createConventionMagicLinkPayload,
   displayRouteName,
   errors,
+  expectArraysToMatch,
   expectHttpResponseToEqual,
 } from "shared";
 import { HttpClient } from "shared-routes";
@@ -88,7 +89,11 @@ describe("Assessment routes", () => {
 
       await processEventsForEmailToBeSent(eventCrawler);
 
-      expect(gateways.notification.getSentEmails()).toMatchObject([
+      expectArraysToMatch(gateways.notification.getSentEmails(), [
+        {
+          kind: "ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION",
+          recipients: [convention.signatories.beneficiary.email],
+        },
         {
           kind: "ASSESSMENT_CREATED_WITH_STATUS_COMPLETED_AGENCY_NOTIFICATION",
           recipients: [validator.email],

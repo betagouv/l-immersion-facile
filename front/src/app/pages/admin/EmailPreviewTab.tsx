@@ -501,6 +501,13 @@ export const defaultEmailValueByEmailKind: {
     internshipKind: "immersion",
     immersionAppellationLabel: "APPELLATION_LABEL",
   },
+  ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION: {
+    internshipKind: "immersion",
+    conventionId: "CONVENTION_ID",
+    beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",
+    beneficiaryLastName: "BENEFICIARY_LAST_NAME",
+    magicLink: "http://MAGIC_LINK",
+  },
   NEW_CONVENTION_AGENCY_NOTIFICATION: {
     internshipKind: "immersion",
     conventionId: "CONVENTION_ID",
