@@ -36,7 +36,7 @@ import {
 } from "../helpers/EstablishmentBuilders";
 import { InsertEstablishmentAggregateFromForm } from "./InsertEstablishmentAggregateFromFormEstablishement";
 
-describe("Insert Establishment aggregate from form data", () => {
+describe("AddEstablishmentAggregateFromFormEstablishment", () => {
   const fakeSiret = "90040893100013";
   const fakePosition: GeoPositionDto = { lat: 49.119146, lon: 6.17602 };
   const fakeAddress = avenueChampsElyseesDto;

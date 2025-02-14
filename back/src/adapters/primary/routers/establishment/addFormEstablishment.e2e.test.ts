@@ -80,13 +80,6 @@ describe("Add form establishment", () => {
         status: 200,
       });
 
-      expectToEqual(await inMemoryUow.formEstablishmentRepository.getAll(), [
-        FormEstablishmentDtoBuilder.valid()
-          .withSiret(TEST_OPEN_ESTABLISHMENT_1.siret)
-          .withBusinessContactEmail(email)
-          .build(),
-      ]);
-
       await processEventsForEmailToBeSent(eventCrawler);
 
       expectToEqual(

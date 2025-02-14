@@ -12,7 +12,6 @@ import { InMemoryDiscussionRepository } from "../../../establishment/adapters/In
 import { InMemoryEstablishmentAggregateRepository } from "../../../establishment/adapters/InMemoryEstablishmentAggregateRepository";
 import { InMemoryEstablishmentLeadQueries } from "../../../establishment/adapters/InMemoryEstablishmentLeadQueries";
 import { InMemoryEstablishmentLeadRepository } from "../../../establishment/adapters/InMemoryEstablishmentLeadRepository";
-import { InMemoryFormEstablishmentRepository } from "../../../establishment/adapters/InMemoryFormEstablishmentRepository";
 import { InMemoryGroupRepository } from "../../../establishment/adapters/InMemoryGroupRepository";
 import { InMemorySearchMadeRepository } from "../../../establishment/adapters/InMemorySearchMadeRepository";
 import { InMemoryEstablishementMarketingRepository } from "../../../marketing/adapters/InMemoryEstablishmentMarketingRepository";
@@ -65,7 +64,6 @@ export const createInMemoryUow = () => {
     groupRepository: new InMemoryGroupRepository(),
     broadcastFeedbacksRepository: new InMemoryBroadcastFeedbacksRepository(),
     featureFlagRepository: new InMemoryFeatureFlagRepository(),
-    formEstablishmentRepository: new InMemoryFormEstablishmentRepository(),
     assessmentRepository: new InMemoryAssessmentRepository(),
     establishmentLeadRepository,
     establishmentLeadQueries: new InMemoryEstablishmentLeadQueries(

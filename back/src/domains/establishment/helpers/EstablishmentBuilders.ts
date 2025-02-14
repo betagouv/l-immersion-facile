@@ -3,6 +3,7 @@ import {
   Builder,
   ContactMethod,
   EstablishmentSearchableBy,
+  FormEstablishmentDto,
   FormEstablishmentSource,
   Location,
   NafDto,
@@ -222,6 +223,69 @@ export class EstablishmentAggregateBuilder
       userRights: [],
     },
   ) {}
+
+  fromFormEstablishment(
+    {
+      appellations,
+      businessAddresses,
+      businessContact,
+      businessName,
+      fitForDisabledWorkers,
+      maxContactsPerMonth,
+      searchableBy,
+      siret,
+      businessNameCustomized,
+      isEngagedEnterprise,
+      website,
+      nextAvailabilityDate,
+      additionalInformation,
+      acquisitionCampaign,
+      acquisitionKeyword,
+      source,
+      naf,
+    }: FormEstablishmentDto,
+    creationDate: Date,
+  ) {
+    const builder = new EstablishmentAggregateBuilder()
+      .withEstablishmentSiret(siret)
+      .withEstablishmentName(businessName)
+      .withSearchableBy(searchableBy)
+      .withContactMethod(businessContact.contactMethod)
+      .withFitForDisabledWorkers(fitForDisabledWorkers)
+      .withMaxContactsPerMonth(maxContactsPerMonth)
+      .withLocations(
+        businessAddresses.map((address) => ({
+          address: {
+            city: "",
+            departmentCode: "",
+            postcode: "",
+            streetNumberAndAddress: "",
+          },
+          id: address.id,
+          position: { lat: 0, lon: 0 },
+        })),
+      )
+      .withOffers(
+        appellations.map((appellation) => ({
+          ...appellation,
+          createdAt: creationDate,
+        })),
+      )
+      .withEstablishmentCustomizedName(businessNameCustomized)
+      .withEstablishmentWebsite(website);
+
+    if (naf) builder.withEstablishmentNaf(naf);
+
+    return builder;
+  }
+
+  withEstablishmentWebsite(website?: AbsoluteUrl | "") {
+    return new EstablishmentAggregateBuilder().withEstablishment(
+      new EstablishmentEntityBuilder(this.aggregate.establishment)
+        .withWebsite(website ?? "")
+        .build(),
+    );
+  }
 
   public build() {
     if (!this.aggregate.userRights.length)

@@ -59,10 +59,14 @@ describe("Update Establishment aggregate from form data", () => {
   it("Fails if establishment does not exists amongst establishments from form", async () => {
     const establishment = FormEstablishmentDtoBuilder.valid().build();
     await expectPromiseToFailWithError(
-      updateEstablishmentAggregateFromFormUseCase.execute({
-        formEstablishment: FormEstablishmentDtoBuilder.valid().build(),
-        triggeredBy: null,
-      }),
+      updateEstablishmentAggregateFromFormUseCase.execute(
+        {
+          formEstablishment: FormEstablishmentDtoBuilder.valid().build(),
+        },
+        {
+          userId: "",
+        },
+      ),
       errors.establishment.notFound({
         siret: establishment.siret,
       }),
@@ -165,7 +169,6 @@ describe("Update Establishment aggregate from form data", () => {
 
       await updateEstablishmentAggregateFromFormUseCase.execute({
         formEstablishment: updatedFormEstablishment,
-        triggeredBy: null,
       });
 
       expectToEqual(uow.userRepository.users, [updatedAdmin, updatedContact]);
@@ -242,7 +245,6 @@ describe("Update Establishment aggregate from form data", () => {
 
       await updateEstablishmentAggregateFromFormUseCase.execute({
         formEstablishment: updatedFormEstablishment,
-        triggeredBy: null,
       });
 
       expectToEqual(uow.userRepository.users, [

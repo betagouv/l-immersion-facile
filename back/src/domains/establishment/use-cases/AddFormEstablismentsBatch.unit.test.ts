@@ -10,7 +10,7 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
 } from "shared";
-import { InMemoryOutboxRepository } from "../../core/events/adapters/InMemoryOutboxRepository";
+import { InMemoryAddressGateway } from "../../core/address/adapters/InMemoryAddressGateway";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import {
   InMemorySiretGateway,
@@ -24,10 +24,9 @@ import {
   createInMemoryUow,
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
-import { InMemoryFormEstablishmentRepository } from "../adapters/InMemoryFormEstablishmentRepository";
-import { InMemoryGroupRepository } from "../adapters/InMemoryGroupRepository";
-import { AddFormEstablishment } from "./AddFormEstablishment";
+import { EstablishmentAggregateBuilder } from "../helpers/EstablishmentBuilders";
 import { AddFormEstablishmentBatch } from "./AddFormEstablismentsBatch";
+import { InsertEstablishmentAggregateFromForm } from "./InsertEstablishmentAggregateFromFormEstablishement";
 
 const icUserNotAdmin = new InclusionConnectedUserBuilder()
   .withIsAdmin(false)
@@ -67,42 +66,43 @@ const createFormEstablishmentBatchDto = (): FormEstablishmentBatchDto => {
 describe("AddFormEstablishmentsBatch Use Case", () => {
   let uow: InMemoryUnitOfWork;
   let addFormEstablishmentBatch: AddFormEstablishmentBatch;
-  let formEstablishmentRepo: InMemoryFormEstablishmentRepository;
-  let outboxRepo: InMemoryOutboxRepository;
-  let groupRepository: InMemoryGroupRepository;
   let siretGateway: InMemorySiretGateway;
-  let uowPerformer: InMemoryUowPerformer;
   let uuidGenerator: TestUuidGenerator;
+  let timeGateway: CustomTimeGateway;
 
   const formEstablishmentBatch = createFormEstablishmentBatchDto();
 
   beforeEach(() => {
     uow = createInMemoryUow();
+    const uowPerformer = new InMemoryUowPerformer(uow);
+
     siretGateway = new InMemorySiretGateway();
-    formEstablishmentRepo = uow.formEstablishmentRepository;
-    groupRepository = uow.groupRepository;
-    outboxRepo = uow.outboxRepository;
-    uow.romeRepository.appellations =
-      defaultValidFormEstablishment.appellations;
-
-    uowPerformer = new InMemoryUowPerformer(uow);
-
     uuidGenerator = new TestUuidGenerator();
+    const addressGateway = new InMemoryAddressGateway();
+    timeGateway = new CustomTimeGateway();
+
     const createNewEvent = makeCreateNewEvent({
-      timeGateway: new CustomTimeGateway(),
+      timeGateway,
       uuidGenerator,
     });
 
-    const addFormEstablishment = new AddFormEstablishment(
-      uowPerformer,
-      createNewEvent,
-      siretGateway,
-    );
+    const insertEstablishmentAggregateFromForm =
+      new InsertEstablishmentAggregateFromForm(
+        uowPerformer,
+        siretGateway,
+        addressGateway,
+        uuidGenerator,
+        timeGateway,
+        createNewEvent,
+      );
 
     addFormEstablishmentBatch = new AddFormEstablishmentBatch(
-      addFormEstablishment,
+      insertEstablishmentAggregateFromForm,
       uowPerformer,
     );
+
+    uow.romeRepository.appellations =
+      defaultValidFormEstablishment.appellations;
   });
 
   it("throws Unauthorized if no currentUser is provided", async () => {
@@ -125,16 +125,15 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
       icUserAdmin,
     );
 
-    const formEstablishmentsInRepo = await formEstablishmentRepo.getAll();
-    expect(formEstablishmentsInRepo).toHaveLength(2);
     expectToEqual(
-      formEstablishmentsInRepo[0],
-      formEstablishmentBatch.formEstablishments[0],
+      uow.establishmentAggregateRepository.establishmentAggregates,
+      formEstablishmentBatch.formEstablishments.map((form) =>
+        new EstablishmentAggregateBuilder()
+          .fromFormEstablishment(form, timeGateway.now())
+          .build(),
+      ),
     );
-    expectToEqual(
-      formEstablishmentsInRepo[1],
-      formEstablishmentBatch.formEstablishments[1],
-    );
+
     expectToEqual(report, {
       numberOfEstablishmentsProcessed: 2,
       numberOfSuccess: 2,
@@ -145,7 +144,11 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
   it("reports the errors when something goes wrong with an addition", async () => {
     const existingFormEstablishment =
       formEstablishmentBatch.formEstablishments[0];
-    formEstablishmentRepo.setFormEstablishments([existingFormEstablishment]);
+    uow.establishmentAggregateRepository.insertEstablishmentAggregate(
+      new EstablishmentAggregateBuilder()
+        .fromFormEstablishment(existingFormEstablishment, timeGateway.now())
+        .build(),
+    );
 
     const report = await addFormEstablishmentBatch.execute(
       formEstablishmentBatch,
@@ -174,8 +177,8 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
       icUserAdmin,
     );
 
-    expect(outboxRepo.events).toHaveLength(2);
-    expectObjectsToMatch(outboxRepo.events[0], {
+    expect(uow.outboxRepository.events).toHaveLength(2);
+    expectObjectsToMatch(uow.outboxRepository.events[0], {
       id: "event1-id",
       topic: "FormEstablishmentAdded",
       payload: {
@@ -186,7 +189,7 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
         },
       },
     });
-    expectObjectsToMatch(outboxRepo.events[1], {
+    expectObjectsToMatch(uow.outboxRepository.events[1], {
       id: "event2-id",
       topic: "FormEstablishmentAdded",
       payload: {
@@ -207,8 +210,8 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
       icUserAdmin,
     );
 
-    expect(groupRepository.groupEntities).toHaveLength(1);
-    expectToEqual(groupRepository.groupEntities[0], {
+    expect(uow.groupRepository.groupEntities).toHaveLength(1);
+    expectToEqual(uow.groupRepository.groupEntities[0], {
       slug: "l-amie-caline",
       name: formEstablishmentBatch.groupName,
       sirets: [
@@ -221,15 +224,20 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
 
   it("updates Group if it already exists", async () => {
     const slug = "l-amie-caline";
-    await groupRepository.save({
+    await uow.groupRepository.save({
       slug,
       name: formEstablishmentBatch.groupName,
       sirets: [formEstablishmentBatch.formEstablishments[0].siret],
       options: groupOptions,
     });
-    await formEstablishmentRepo.setFormEstablishments([
-      formEstablishmentBatch.formEstablishments[0],
-    ]);
+    await uow.establishmentAggregateRepository.insertEstablishmentAggregate(
+      new EstablishmentAggregateBuilder()
+        .fromFormEstablishment(
+          formEstablishmentBatch.formEstablishments[0],
+          timeGateway.now(),
+        )
+        .build(),
+    );
     uuidGenerator.setNextUuids(["event1-id", "event2-id"]);
 
     const report = await addFormEstablishmentBatch.execute(
@@ -250,7 +258,7 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
       ],
     });
 
-    expectToEqual(groupRepository.groupEntities, [
+    expectToEqual(uow.groupRepository.groupEntities, [
       {
         slug,
         name: formEstablishmentBatch.groupName,

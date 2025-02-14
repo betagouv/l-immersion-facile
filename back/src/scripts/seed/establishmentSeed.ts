@@ -6,7 +6,6 @@ import {
   EstablishmentEntityBuilder,
   OfferEntityBuilder,
 } from "../../domains/establishment/helpers/EstablishmentBuilders";
-import { establishmentAggregateToFormEstablishement } from "../../domains/establishment/use-cases/RetrieveFormEstablishmentFromAggregates";
 import { seedUsers } from "./userSeed";
 
 export const franceMerguez = new EstablishmentAggregateBuilder()
@@ -141,22 +140,6 @@ export const establishmentSeed = async (uow: UnitOfWork) => {
         },
       ])
       .build(),
-  );
-
-  Promise.all(
-    [franceMerguez, decathlon].map(async (establishmentAggregate) => {
-      const offersAsAppellationDto =
-        await uow.establishmentAggregateRepository.getOffersAsAppellationAndRomeDtosBySiret(
-          establishmentAggregate.establishment.siret,
-        );
-      await uow.formEstablishmentRepository.create(
-        await establishmentAggregateToFormEstablishement(
-          establishmentAggregate,
-          offersAsAppellationDto,
-          uow,
-        ),
-      );
-    }),
   );
 
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>

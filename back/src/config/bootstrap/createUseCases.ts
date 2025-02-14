@@ -95,13 +95,11 @@ import { TimeGateway } from "../../domains/core/time-gateway/ports/TimeGateway";
 import { UnitOfWorkPerformer } from "../../domains/core/unit-of-work/ports/UnitOfWorkPerformer";
 import { UuidGenerator } from "../../domains/core/uuid-generator/ports/UuidGenerator";
 import { AddEstablishmentLead } from "../../domains/establishment/use-cases/AddEstablishmentLead";
-import { AddFormEstablishment } from "../../domains/establishment/use-cases/AddFormEstablishment";
 import { AddFormEstablishmentBatch } from "../../domains/establishment/use-cases/AddFormEstablismentsBatch";
 import { makeAssessmentReminder } from "../../domains/establishment/use-cases/AssessmentReminder";
 import { ContactEstablishment } from "../../domains/establishment/use-cases/ContactEstablishment";
 import { makeContactRequestReminder } from "../../domains/establishment/use-cases/ContactRequestReminder";
 import { DeleteEstablishment } from "../../domains/establishment/use-cases/DeleteEstablishment";
-import { EditFormEstablishment } from "../../domains/establishment/use-cases/EditFormEstablishment";
 import { makeGetExternalSearchResult } from "../../domains/establishment/use-cases/GetExternalSearchResult";
 import { GetOffersByGroupSlug } from "../../domains/establishment/use-cases/GetGroupBySlug";
 import { GetSearchResultBySearchQuery } from "../../domains/establishment/use-cases/GetSearchResultBySearchQuery";
@@ -166,11 +164,15 @@ export const createUseCases = (
       createNewEvent,
     );
 
-  const addFormEstablishment = new AddFormEstablishment(
-    uowPerformer,
-    createNewEvent,
-    gateways.siret,
-  );
+  const insertEstablishmentAggregateFromForm =
+    new InsertEstablishmentAggregateFromForm(
+      uowPerformer,
+      gateways.siret,
+      gateways.addressApi,
+      uuidGenerator,
+      gateways.timeGateway,
+      createNewEvent,
+    );
 
   const generateConventionMagicLinkUrl = makeGenerateConventionMagicLinkUrl(
     config,
@@ -266,7 +268,7 @@ export const createUseCases = (
       lookupLocation: new LookupLocation(gateways.addressApi),
 
       addFormEstablishmentBatch: new AddFormEstablishmentBatch(
-        addFormEstablishment,
+        insertEstablishmentAggregateFromForm,
         uowPerformer,
       ),
 
@@ -334,12 +336,6 @@ export const createUseCases = (
         uowPerformer,
       ),
 
-      addFormEstablishment,
-
-      editFormEstablishment: new EditFormEstablishment(
-        uowPerformer,
-        createNewEvent,
-      ),
       retrieveFormEstablishmentFromAggregates:
         new RetrieveFormEstablishmentFromAggregates(uowPerformer),
       updateEstablishmentAggregateFromForm:
@@ -350,15 +346,7 @@ export const createUseCases = (
           gateways.timeGateway,
           createNewEvent,
         ),
-      insertEstablishmentAggregateFromForm:
-        new InsertEstablishmentAggregateFromForm(
-          uowPerformer,
-          gateways.siret,
-          gateways.addressApi,
-          uuidGenerator,
-          gateways.timeGateway,
-          createNewEvent,
-        ),
+      insertEstablishmentAggregateFromForm,
       addEstablishmentLead: new AddEstablishmentLead(
         uowPerformer,
         gateways.timeGateway,

@@ -28,7 +28,9 @@ export const createEstablishmentRouter = (deps: AppDependencies) => {
 
   establishmentSharedRouter.addFormEstablishment((req, res) =>
     sendHttpResponse(req, res, () =>
-      deps.useCases.addFormEstablishment.execute(req.body),
+      deps.useCases.insertEstablishmentAggregateFromForm.execute({
+        formEstablishment: req.body,
+      }),
     ),
   );
 
@@ -53,8 +55,8 @@ export const createEstablishmentRouter = (deps: AppDependencies) => {
     deps.establishmentMagicLinkAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
-        deps.useCases.editFormEstablishment.execute(
-          req.body,
+        deps.useCases.updateEstablishmentAggregateFromForm.execute(
+          { formEstablishment: req.body },
           req.payloads?.establishment ?? req.payloads?.inclusion,
         ),
       ),

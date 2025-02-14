@@ -33,7 +33,6 @@ export interface Database {
   establishments: Establishments;
   exchanges: Exchanges;
   feature_flags: FeatureFlags;
-  form_establishments: FormEstablishments;
   groups__sirets: GroupsSirets;
   groups: Groups;
   immersion_assessments: ImmersionAssessments;
@@ -294,27 +293,6 @@ interface ViewAppellationsDto {
   appellation_label: string | null;
   rome_code: string | null;
   rome_label: string | null;
-}
-
-interface FormEstablishments extends WithAcquisition {
-  additional_information: Generated<string | null>;
-  business_addresses: Json;
-  business_contact: Generated<Json>;
-  business_name_customized: string | null;
-  business_name: string;
-  created_at: Generated<Timestamp | null>;
-  fit_for_disabled_workers: boolean;
-  is_engaged_enterprise: boolean | null;
-  max_contacts_per_month: number;
-  naf: Json | null;
-  professions: Json;
-  siret: string;
-  source: Generated<string>;
-  updated_at: Generated<Timestamp | null>;
-  website: Generated<string | null>;
-  next_availability_date: Timestamp | null;
-  searchable_by_students: boolean;
-  searchable_by_job_seekers: boolean;
 }
 
 type EstablishmentLeadEventsKind =
