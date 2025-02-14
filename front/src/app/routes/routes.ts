@@ -222,7 +222,10 @@ export const { RouteProvider, useRoute, routes } = createRouter({
     () => `/${frontRoutes.error}`,
   ),
   formEstablishment: defineRoute(
-    establishmentParams,
+    {
+      ...inclusionConnectedParams,
+      ...establishmentParams,
+    },
     () => `/${frontRoutes.establishment}`,
   ),
   formEstablishmentForExternals: defineRoute(

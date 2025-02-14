@@ -21,13 +21,9 @@ export type ContactMethod = (typeof contactMethods)[number];
 export const isContactMethod = includesTypeGuard(contactMethods);
 
 export type BusinessContactDto = {
-  lastName: string;
-  firstName: string;
   job: string;
-  phone: string; // we have a very permissive regex /^\+?[0-9]+$/
   email: Email; // a valid email
   contactMethod: ContactMethod;
-  copyEmails: Email[];
 };
 
 export type FormEstablishmentSourceInUrl =

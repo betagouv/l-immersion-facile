@@ -1,21 +1,27 @@
 import React from "react";
-import { MainWrapper, PageHeader } from "react-design-system";
+import { PageHeader } from "react-design-system";
 import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
-import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
+import { InclusionConnectedPrivateRoute } from "src/app/routes/InclusionConnectedPrivateRoute";
+import { routes } from "src/app/routes/routes";
+import { Route } from "type-route";
 
-export const EstablishmentCreationFormPage = () => (
-  <HeaderFooterLayout>
-    <MainWrapper
-      layout="default"
-      pageHeader={
-        <PageHeader
-          title="Proposer une immersion"
-          breadcrumbs={<Breadcrumbs />}
-        />
-      }
-    >
-      <EstablishmentForm mode="create" />
-    </MainWrapper>
-  </HeaderFooterLayout>
+type EstablishmentCreationFormPage = {
+  route: Route<typeof routes.formEstablishment>;
+};
+
+export const EstablishmentCreationFormPage = ({
+  route,
+}: EstablishmentCreationFormPage) => (
+  <InclusionConnectedPrivateRoute
+    route={route}
+    inclusionConnectConnexionPageHeader={
+      <PageHeader
+        title="Proposer une immersion"
+        breadcrumbs={<Breadcrumbs />}
+      />
+    }
+  >
+    <EstablishmentForm mode="create" />
+  </InclusionConnectedPrivateRoute>
 );

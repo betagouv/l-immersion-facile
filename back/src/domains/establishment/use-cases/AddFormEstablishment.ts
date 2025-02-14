@@ -37,8 +37,9 @@ export class AddFormEstablishment extends TransactionalUseCase<
   protected async _execute(
     dto: FormEstablishmentDto,
     uow: UnitOfWork,
-    currentUser?: InclusionConnectedUser,
+    inclusionConnectedUser?: InclusionConnectedUser,
   ): Promise<void> {
+    if (!inclusionConnectedUser) throw errors.user.noJwtProvided();
     const existingFormEstablishment =
       await uow.formEstablishmentRepository.getBySiret(dto.siret);
 
@@ -61,10 +62,10 @@ export class AddFormEstablishment extends TransactionalUseCase<
           : dto.businessNameCustomized,
     };
 
-    const triggeredBy: TriggeredBy | null = currentUser
+    const triggeredBy: TriggeredBy | null = inclusionConnectedUser
       ? {
           kind: "inclusion-connected",
-          userId: currentUser.id,
+          userId: inclusionConnectedUser.id,
         }
       : null;
 

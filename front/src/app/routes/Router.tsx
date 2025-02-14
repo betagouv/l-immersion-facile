@@ -176,7 +176,7 @@ const getPageByRouteName: {
     ),
 
   errorRedirect: (route) => <ErrorRedirectPage route={route} />,
-  formEstablishment: () => <EstablishmentCreationFormPage />,
+  formEstablishment: (route) => <EstablishmentCreationFormPage route={route} />,
   formEstablishmentForExternals: (route) => (
     <EstablishmentFormPageForExternals route={route} />
   ),
